@@ -1,5 +1,6 @@
 export interface Sheet {
     id: number;
+    user_id?: number;
     title: string;
     type: string;
     file_url: string;
