@@ -68,12 +68,21 @@ export default function Register() {
                 // نجاح المرحلة الأولى من التسجيل
                 // التوجيه لصفحة التحقق مع تمرير البريد الإلكتروني
                 router.push(`/register/verify?email=${encodeURIComponent(payload.email)}`);
+            } else if (res.status === 500 && data.message?.includes('تم إنشاء الحساب')) {
+                // حالة خاصة: الحساب تم إنشاؤه ولكن البريد لم يصل
+                router.push(`/register/verify?email=${encodeURIComponent(payload.email)}&resend=true`);
             } else {
                 // معالجة الأخطاء (422 Unprocessable Entity وغيرها)
                 if (data.errors) {
                     // جلب أول رسالة خطأ
                     const firstError = Object.values(data.errors)[0];
-                    setError(Array.isArray(firstError) ? firstError[0] : 'بيانات غير صالحة');
+                    let errorMessage = Array.isArray(firstError) ? firstError[0] : 'بيانات غير صالحة';
+                    
+                    // تعريب رسالة "البريد مأخوذ مسبقاً" لتوجه المستخدم للدخول أو التأكيد
+                    if (errorMessage.includes('email has already been taken')) {
+                        errorMessage = 'هذا البريد مسجل مسبقاً، يرجى تسجيل الدخول أو تأكيد الحساب.';
+                    }
+                    setError(errorMessage);
                 } else {
                     setError(data.message || 'حدث خطأ أثناء إنشاء الحساب.');
                 }

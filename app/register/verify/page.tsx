@@ -20,13 +20,45 @@ export default function VerifyOTP() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
+    const [isResending, setIsResending] = useState(false);
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+    const handleResendOTP = async () => {
+        if (!email || isResending) return;
+        setIsResending(true);
+        setError('');
+        setMessage('');
+
+        try {
+            // ملاحظة: تأكد من الـ endpoint الخاص بإعادة الإرسال من الباك-إند
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/register/resend`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ email }),
+            });
+
+            if (res.ok) {
+                setMessage('تم إعادة إرسال رمز التحقق لبريدك الإلكتروني.');
+            } else {
+                setError('فشل إعادة إرسال الرمز. يرجى المحاولة لاحقاً.');
+            }
+        } catch (err) {
+            setError('خطأ في الاتصال بالسيرفر.');
+        } finally {
+            setIsResending(false);
+        }
+    };
 
     useEffect(() => {
         if (!email) {
             setError('البريد الإلكتروني مفقود. يرجى محاولة التسجيل مرة أخرى.');
+        } else if (searchParams.get('resend') === 'true') {
+            handleResendOTP();
         }
-    }, [email]);
+    }, [email, searchParams]);
 
     const handleChange = (index: number, value: string) => {
         if (isNaN(Number(value))) return;
@@ -83,7 +115,11 @@ export default function VerifyOTP() {
                     router.push('/login');
                 }, 2000);
             } else {
-                setError(data.message || 'الرمز غير صحيح أو منتهي الصلاحية.');
+                if (res.status === 429) {
+                    setError('لقد تجاوزت عدد المحاولات المسموح بها. يرجى الانتظار قليلاً.');
+                } else {
+                    setError(data.message || 'الرمز غير صحيح أو منتهي الصلاحية.');
+                }
             }
         } catch (err) {
             setError('فشل الاتصال بالخادم، يرجى المحاولة لاحقاً.');
@@ -181,7 +217,13 @@ export default function VerifyOTP() {
 
                     <div className="mt-8 text-center">
                         <p className="text-sm text-slate-500 font-medium">
-                            لم يصلك الرمز؟ <button className="font-bold text-indigo-600 hover:underline">إعادة الإرسال</button>
+                            لم يصلك الرمز؟ <button 
+                                onClick={handleResendOTP}
+                                disabled={isResending}
+                                className="font-bold text-indigo-600 hover:underline disabled:opacity-50"
+                            >
+                                {isResending ? 'جاري الإرسال...' : 'إعادة الإرسال'}
+                            </button>
                         </p>
                     </div>
                 </div>

@@ -48,6 +48,16 @@ export default function Login() {
                 localStorage.setItem('user', JSON.stringify(data.user));
                 router.push('/');
             } else {
+                if (res.status === 429) {
+                    setError('لقد تجاوزت عدد المحاولات المسموح بها. يرجى الانتظار دقيقة قبل المحاولة مرة أخرى.');
+                    return;
+                }
+                if (res.status === 403) {
+                    // الحساب غير مؤكد، التوجيه لصفحة التحقق
+                    router.push(`/register/verify?email=${encodeURIComponent(fullEmail)}&resend=true`);
+                    return;
+                }
+                
                 if (res.status === 401) {
                     setError('بيانات الدخول غير صحيحة، يرجى التأكد من الرقم السري ورقم القيد.');
                 } else if (data.errors) {

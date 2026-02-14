@@ -52,6 +52,10 @@ export default function ForgotPassword() {
             if (res.ok) {
                 setMessage(data.message || 'تم إرسال رابط إعادة تعيين كلمة المرور بنجاح.');
             } else {
+                if (res.status === 429) {
+                    setError('لقد طلبت الكثير من الروابط. يرجى الانتظار دقيقة قبل المحاولة مرة أخرى.');
+                    return;
+                }
                 // معالجة ذكية لكل أنواع رسائل الخطأ من Laravel
                 let finalError = 'حدث خطأ غير متوقع، حاول مرة أخرى.';
 
