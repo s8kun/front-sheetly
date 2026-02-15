@@ -77,13 +77,21 @@ export default function SubjectsPage() {
                                 });
                                 if (detailRes.ok) {
                                     const detail = await detailRes.json();
-                                    // حساب المجموع: عدد الشباتر + عدد الامتحانات
+                                    console.log(`Subject ${sub.code} detail:`, detail); // Debug log
+                                    // حساب المجموع: عدد الشيتات داخل كل شابتر + عدد الامتحانات
+                                    // نلاحظ أن chapters قد تكون أرقاماً فقط أو كائنات، ولكن هذا لا يعطينا عدد الملفات داخل كل شابتر
+                                    // إذا كان الباكند لا يعيد عدد الملفات، فسنعتمد على عدد الشباتر + الامتحانات مؤقتاً
                                     const totalCount = (detail.chapters?.length || 0) + 
                                                      (detail.midterms?.length || 0) + 
                                                      (detail.finals?.length || 0);
                                     return { code: sub.code, count: totalCount };
+                                } else {
+                                    console.error(`Failed to fetch detail for ${sub.code}:`, detailRes.status);
                                 }
-                            } catch (e) { return null; }
+                            } catch (e) { 
+                                console.error(`Error fetching detail for ${sub.code}:`, e);
+                                return null; 
+                            }
                         });
     
                         // تحديث الحالة بالأرقام الجديدة
