@@ -24,8 +24,11 @@ export default function ResetPassword() {
     const [message, setMessage] = useState('');
 
     useEffect(() => {
-        setToken(searchParams.get('token') || '');
-        setEmail(searchParams.get('email') || '');
+        const t = searchParams.get('token') || '';
+        const e = searchParams.get('email') || '';
+        console.log("Reset Password Params - Token:", t ? "Found" : "Missing", "Email:", e);
+        setToken(t);
+        setEmail(e);
     }, [searchParams]);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -34,7 +37,7 @@ export default function ResetPassword() {
         setMessage('');
 
         if (!token || !email) {
-            setError('رابط غير صالح. يرجى طلب رابط جديد.');
+            setError('رابط غير صالح. يرجى التأكد من الضغط على الرابط الصحيح في بريدك الإلكتروني.');
             return;
         }
 
@@ -44,6 +47,7 @@ export default function ResetPassword() {
         }
 
         setIsLoading(true);
+        console.log("Attempting to reset password for:", email);
 
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reset-password`, {
@@ -61,6 +65,7 @@ export default function ResetPassword() {
             });
 
             const data = await res.json();
+            console.log("Reset Response Data:", data);
 
             if (res.ok) {
                 setMessage('تم تغيير كلمة المرور بنجاح. يمكنك الآن تسجيل الدخول.');
@@ -68,9 +73,10 @@ export default function ResetPassword() {
                     router.push('/login');
                 }, 3000);
             } else {
-                setError(data.message || 'فشل في إعادة تعيين كلمة المرور.');
+                setError(data.message || 'فشل في إعادة تعيين كلمة المرور. قد يكون الرابط قد انتهى.');
             }
         } catch (err) {
+            console.error("Reset Password Error:", err);
             setError('فشل الاتصال بالخادم.');
         } finally {
             setIsLoading(false);

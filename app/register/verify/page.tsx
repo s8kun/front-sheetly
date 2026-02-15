@@ -29,9 +29,11 @@ export default function VerifyOTP() {
         setError('');
         setMessage('');
 
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/resend-otp`;
+        console.log("Calling Resend OTP URL:", url);
+
         try {
-            // ملاحظة: تأكد من الـ endpoint الخاص بإعادة الإرسال من الباك-إند
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/register/resend`, {
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -40,10 +42,16 @@ export default function VerifyOTP() {
                 body: JSON.stringify({ email }),
             });
 
+            const data = await res.json();
+
             if (res.ok) {
                 setMessage('تم إعادة إرسال رمز التحقق لبريدك الإلكتروني.');
             } else {
-                setError('فشل إعادة إرسال الرمز. يرجى المحاولة لاحقاً.');
+                if (res.status === 429) {
+                    setError('محاولات كثيرة جداً. يرجى الانتظار دقيقة قبل طلب رمز جديد.');
+                } else {
+                    setError(data.message || 'فشل إعادة إرسال الرمز. يرجى المحاولة لاحقاً.');
+                }
             }
         } catch (err) {
             setError('خطأ في الاتصال بالسيرفر.');
@@ -93,6 +101,7 @@ export default function VerifyOTP() {
         }
 
         setIsLoading(true);
+        console.log("Verifying OTP for:", email, "Code:", code);
 
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/register/verify`, {
@@ -103,11 +112,12 @@ export default function VerifyOTP() {
                 },
                 body: JSON.stringify({
                     email: email,
-                    code: parseInt(code),
+                    code: code, // إرسال كنص للحفاظ على الأصفار
                 }),
             });
 
             const data = await res.json();
+            console.log("Verify Response:", data);
 
             if (res.ok) {
                 setMessage('تم تأكيد الحساب بنجاح! سيتم توجيهك لصفحة الدخول.');
