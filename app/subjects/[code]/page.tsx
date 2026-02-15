@@ -52,6 +52,7 @@ export default function SubjectPage({params}: { params: Promise<{ code: string }
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/subjects/${subjectCode}`, {
                 method: 'DELETE',
+                credentials: 'include',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
@@ -74,6 +75,7 @@ export default function SubjectPage({params}: { params: Promise<{ code: string }
             try {
                 // 1. جلب بيانات المادة الأساسية
                 const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subjects/${subjectCode}`, {
+                    credentials: 'include',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Accept': 'application/json'
@@ -91,6 +93,7 @@ export default function SubjectPage({params}: { params: Promise<{ code: string }
                             const chapterNum = typeof item === 'number' ? item : (item.chapter_number || index + 1);
                             try {
                                 const chRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subjects/${subjectCode}/chapters/${chapterNum}`, {
+                                    credentials: 'include',
                                     headers: { 'Authorization': `Bearer ${token}` }
                                 });
                                 if (chRes.ok) {

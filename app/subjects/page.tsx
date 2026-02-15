@@ -50,6 +50,7 @@ export default function SubjectsPage() {
                 const token = Cookies.get('token');
                 try {
                     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subjects?search=${searchQuery}`, {
+                        credentials: 'include',
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Accept': 'application/json'
@@ -71,6 +72,7 @@ export default function SubjectsPage() {
                         const detailsPromises = data.map(async (sub: any) => {
                             try {
                                 const detailRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subjects/${sub.code}`, {
+                                    credentials: 'include',
                                     headers: { 'Authorization': `Bearer ${token}` }
                                 });
                                 if (detailRes.ok) {

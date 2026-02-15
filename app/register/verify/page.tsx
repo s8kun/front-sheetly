@@ -35,6 +35,7 @@ export default function VerifyOTP() {
         try {
             const res = await fetch(url, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
@@ -106,6 +107,7 @@ export default function VerifyOTP() {
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/register/verify`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',

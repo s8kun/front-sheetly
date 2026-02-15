@@ -39,6 +39,7 @@ const ActivityItem = memo(({item, type}: ActivityItemProps) => {
             try {
                 // 1. جلب الملفات داخل الشابتر
                 const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subjects/${params.code}/chapters/${item.chapterNumber}`, {
+                    credentials: 'include',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
@@ -49,6 +50,7 @@ const ActivityItem = memo(({item, type}: ActivityItemProps) => {
                         const deletePromises = data.sheets.map((s: any) => 
                             fetch(`${process.env.NEXT_PUBLIC_API_URL}/sheets/${s.id}`, {
                                 method: 'DELETE',
+                                credentials: 'include',
                                 headers: { 'Authorization': `Bearer ${token}` }
                             })
                         );
@@ -70,6 +72,7 @@ const ActivityItem = memo(({item, type}: ActivityItemProps) => {
             try {
                 const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/sheets/${item.id}`, {
                     method: 'DELETE',
+                    credentials: 'include',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
@@ -102,6 +105,7 @@ const ActivityItem = memo(({item, type}: ActivityItemProps) => {
 
             if (item.isLazy && item.chapterNumber) {
                 const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subjects/${params.code}/chapters/${item.chapterNumber}`, {
+                    credentials: 'include',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
@@ -120,6 +124,7 @@ const ActivityItem = memo(({item, type}: ActivityItemProps) => {
             }
 
             const resDownload = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/sheets/${finalId}/download`, {
+                credentials: 'include',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (resDownload.ok) {

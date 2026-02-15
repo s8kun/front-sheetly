@@ -38,7 +38,9 @@ export default function UploadPage() {
         }
 
         // Fetch subjects
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/subjects`)
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/subjects`, {
+            credentials: 'include'
+        })
             .then(res => res.json())
             .then(data => setSubjects(data))
             .catch(err => console.error("Error fetching subjects", err));
@@ -91,6 +93,7 @@ export default function UploadPage() {
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/sheets/upload`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/json',
