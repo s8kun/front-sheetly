@@ -4,7 +4,6 @@ import Cookies from "js-cookie";
 import { useState, useEffect } from "react";
 import { Cairo } from "next/font/google";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { UploadCloud, CheckCircle } from "lucide-react";
 
 const cairo = Cairo({
@@ -234,26 +233,11 @@ export default function UploadPage() {
               </div>
             </div>
 
-            {type === "chapter" && (
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">
-                  رقم الشابتر (اختياري)
-                </label>
-                <input
-                  type="number"
-                  value={chapterNumber}
-                  onChange={(e) => setChapterNumber(e.target.value)}
-                  className="w-full p-3 rounded-xl border border-slate-200 outline-none"
-                  placeholder="مثال: 1"
-                />
-              </div>
-            )}
-
             <div className="relative">
               <label className="block text-sm font-bold text-slate-700 mb-2">
                 اختر الملف (PDF أو DOCX)
               </label>
-              <label className="mt-1 flex justify-center px-6 pt-10 pb-10 border-2 border-slate-200 border-dashed rounded-[2rem] hover:border-indigo-400 hover:bg-indigo-50/30 transition-all cursor-pointer group">
+              <label className="mt-1 flex justify-center px-6 pt-10 pb-10 border-2 border-slate-200 border-dashed rounded-4xl hover:border-indigo-400 hover:bg-indigo-50/30 transition-all cursor-pointer group">
                 <input
                   type="file"
                   className="sr-only"
