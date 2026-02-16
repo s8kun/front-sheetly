@@ -203,7 +203,7 @@ export default function SubjectPage({
                   <button
                     onClick={handleDeleteSubject}
                     disabled={isDeleting}
-                    className="p-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                    className="p-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all "
                     title="حذف المادة"
                   >
                     <svg
@@ -231,7 +231,7 @@ export default function SubjectPage({
             </div>
 
             <div className="flex justify-center mb-10">
-              <div className="bg-white/70 dark:bg-slate-900/60 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex gap-1">
+              <div className="bg-white/70 dark:bg-slate-900/60 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700  flex gap-1">
                 {[
                   { id: "chapters", label: "الشيتات" },
                   { id: "midterms", label: "جزئي" },
@@ -249,7 +249,7 @@ export default function SubjectPage({
                     {activeTab === tab.id && (
                       <motion.div
                         layoutId="activeTab"
-                        className="absolute inset-0 bg-blue-600 rounded-xl shadow-md"
+                        className="absolute inset-0 bg-blue-600 rounded-xl "
                         transition={{
                           type: "spring",
                           bounce: 0.2,

@@ -98,7 +98,7 @@ export default function Login() {
       <div className="hidden md:block absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-sky-200/50 rounded-full blur-3xl mix-blend-multiply opacity-70 delay-700" />
 
       <nav className="absolute top-6 right-6 z-50">
-        <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse bg-white/70 dark:bg-slate-900/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/60 dark:border-slate-700/60 shadow-sm">
+        <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse bg-white/70 dark:bg-slate-900/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/60 dark:border-slate-700/60 ">
           <li className="inline-flex items-center">
             <Link
               href="/"
@@ -120,10 +120,10 @@ export default function Login() {
         </ol>
       </nav>
 
-      <div className="w-full h-screen md:h-auto md:max-w-md bg-white/85 dark:bg-slate-900/80 backdrop-blur-xl md:rounded-3xl md:shadow-2xl md:border md:border-slate-200/70 dark:border-slate-700/60 flex flex-col px-6 pt-24 pb-10 md:py-10 md:px-10 relative z-10">
+      <div className="w-full h-screen md:h-auto md:max-w-md bg-white/85 dark:bg-slate-900/80 backdrop-blur-xl md:rounded-3xl  md:border md:border-slate-200/70 dark:border-slate-700/60 flex flex-col px-6 pt-24 pb-10 md:py-10 md:px-10 relative z-10">
         <div className="w-full mx-auto flex flex-col justify-center h-full md:h-auto">
           <div className="text-center mb-10">
-            <div className="mx-auto w-14 h-14 bg-gradient-to-tr from-blue-600 to-blue-500 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-blue-500/30 mb-6">
+            <div className="mx-auto w-14 h-14 bg-gradient-to-tr from-blue-600 to-blue-500 rounded-2xl flex items-center justify-center text-white font-bold text-2xl   mb-6">
               ش
             </div>
             <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
@@ -146,7 +146,7 @@ export default function Login() {
                 البريد الجامعي
               </label>
               <div
-                className={`flex items-center w-full h-14 rounded-2xl border ${error ? "border-red-300" : "border-slate-300 dark:border-slate-700"} bg-white/70 dark:bg-slate-900/60 focus-within:bg-white dark:focus-within:bg-slate-900 focus-within:ring-2 focus-within:ring-blue-500 overflow-hidden shadow-sm transition-all`}
+                className={`flex items-center w-full h-14 rounded-2xl border ${error ? "border-red-300" : "border-slate-300 dark:border-slate-700"} bg-white/70 dark:bg-slate-900/60 focus-within:bg-white dark:focus-within:bg-slate-900 focus-within:ring-2 focus-within:ring-blue-500 overflow-hidden  transition-all`}
                 dir="ltr"
               >
                 <span className="shrink-0 pl-3 pr-1 text-slate-500 dark:text-slate-400 font-mono text-xs md:text-sm border-r border-slate-200 dark:border-slate-700 select-none h-full flex items-center bg-slate-50/50 dark:bg-slate-800/60">
@@ -177,7 +177,7 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
-                className={`block w-full h-14 rounded-2xl border ${error ? "border-red-300" : "border-slate-300 dark:border-slate-700"} bg-white/70 dark:bg-slate-900/60 focus:bg-white dark:focus:bg-slate-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg transition-all px-4 text-slate-900 dark:text-slate-100`}
+                className={`block w-full h-14 rounded-2xl border ${error ? "border-red-300" : "border-slate-300 dark:border-slate-700"} bg-white/70 dark:bg-slate-900/60 focus:bg-white dark:focus:bg-slate-900  focus:border-blue-500 focus:ring-blue-500 text-lg transition-all px-4 text-slate-900 dark:text-slate-100`}
               />
               <div className="mt-2 text-left">
                 <Link
@@ -192,7 +192,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-14 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold text-lg shadow-lg hover:shadow-blue-500/50 hover:-translate-y-1 transition-all duration-300 disabled:opacity-70 flex items-center justify-center"
+              className="w-full h-14 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold text-lg   hover:-translate-y-1 transition-all duration-300 disabled:opacity-70 flex items-center justify-center"
             >
               {isLoading ? "جاري الدخول..." : "تسجيل الدخول"}
             </button>

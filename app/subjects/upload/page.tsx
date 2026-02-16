@@ -151,7 +151,7 @@ export default function UploadPage() {
 
   return (
     <div className={`max-w-2xl mx-auto py-10 px-6 ${cairo.className}`}>
-      <div className="bg-white/90 dark:bg-slate-900/70 rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-slate-700">
+      <div className="bg-white/90 dark:bg-slate-900/70 rounded-3xl p-8  border border-slate-200 dark:border-slate-700">
         <header className="text-center mb-8">
           <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mx-auto mb-4">
             <UploadCloud className="w-8 h-8" />
@@ -270,10 +270,10 @@ export default function UploadPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full py-4 rounded-2xl font-black text-white shadow-lg transition-all ${
+              className={`w-full py-4 rounded-2xl font-black text-white  transition-all ${
                 isLoading
                   ? "bg-blue-300 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700 hover:scale-[1.02] shadow-blue-200"
+                  : "bg-blue-600 hover:bg-blue-700 hover:scale-[1.02] "
               }`}
             >
               {isLoading ? "جاري الرفع..." : "تأكيد الرفع والمساهمة"}

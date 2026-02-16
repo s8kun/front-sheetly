@@ -92,7 +92,7 @@ export default function MySheetsPage() {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-24 bg-white/90 dark:bg-slate-900/70 animate-pulse rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm"
+              className="h-24 bg-white/90 dark:bg-slate-900/70 animate-pulse rounded-2xl border border-slate-200 dark:border-slate-700 "
             />
           ))}
         </div>
@@ -115,10 +115,10 @@ export default function MySheetsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 key={sheet.id}
-                className="bg-white/90 dark:bg-slate-900/70 p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-blue-200 dark:hover:border-blue-500/40 transition-colors"
+                className="bg-white/90 dark:bg-slate-900/70 p-5 rounded-3xl border border-slate-200 dark:border-slate-700  flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-blue-200 dark:hover:border-blue-500/40 transition-colors"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-blue-600 shadow-inner">
+                  <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-blue-600 ">
                     <FileText className="w-6 h-6" />
                   </div>
                   <div className="text-right">

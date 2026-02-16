@@ -8,7 +8,7 @@ export default function Loading() {
           <div className="absolute inset-0 bg-blue-500/20 rounded-3xl animate-ping opacity-75"></div>
 
           {/* Logo Box */}
-          <div className="relative w-20 h-20 bg-gradient-to-tr from-blue-600 to-blue-500 rounded-3xl flex items-center justify-center shadow-2xl shadow-blue-500/40 z-10 animate-pulse">
+          <div className="relative w-20 h-20 bg-gradient-to-tr from-blue-600 to-blue-500 rounded-3xl flex items-center justify-center   z-10 animate-pulse">
             <span className="text-white font-black text-3xl pb-1">ش</span>
           </div>
         </div>

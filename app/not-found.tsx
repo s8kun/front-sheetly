@@ -40,7 +40,7 @@ export default function NotFound() {
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             className="absolute inset-0 flex items-center justify-center"
           >
-            <div className="bg-white/90 dark:bg-slate-900/80 p-6 rounded-[2.5rem] shadow-2xl shadow-blue-200 border border-slate-200 dark:border-slate-700 relative z-10">
+            <div className="bg-white/90 dark:bg-slate-900/80 p-6 rounded-[2.5rem]   border border-slate-200 dark:border-slate-700 relative z-10">
               <FileQuestion
                 className="w-20 h-20 text-blue-600"
                 strokeWidth={1.5}
@@ -65,7 +65,7 @@ export default function NotFound() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/"
-              className="flex items-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-blue-200 group"
+              className="flex items-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg hover:bg-blue-700 hover:scale-105 active:scale-95 transition-all   group"
             >
               <Home className="w-5 h-5" />
               <span>الرجوع للرئيسية</span>

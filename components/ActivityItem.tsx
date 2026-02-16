@@ -170,17 +170,17 @@ const ActivityItem = memo(({ item, type }: ActivityItemProps) => {
       layout
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={`group relative border p-4 rounded-[2rem] shadow-sm transition-all cursor-pointer ${
+      className={`group relative border p-4 rounded-[2rem]  transition-all cursor-pointer ${
         isDeleting
           ? "opacity-50 grayscale"
-          : "bg-white/80 dark:bg-slate-800/70 backdrop-blur-sm border-slate-200 dark:border-slate-700 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-500/40"
+          : "bg-white/80 dark:bg-slate-800/70 backdrop-blur-sm border-slate-200 dark:border-slate-700  hover:border-blue-200 dark:hover:border-blue-500/40"
       }`}
     >
       {isAdmin && (
         <button
           onClick={handleDelete}
           disabled={isDeleting}
-          className="absolute -top-2 -left-2 w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg z-20 hover:scale-110 transition-all disabled:bg-slate-400"
+          className="absolute -top-2 -left-2 w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center  z-20 hover:scale-110 transition-all disabled:bg-slate-400"
           title="حذف"
         >
           {isDeleting ? (
@@ -193,7 +193,7 @@ const ActivityItem = memo(({ item, type }: ActivityItemProps) => {
 
       <div className="flex items-start gap-4">
         <div
-          className={`shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-md ${
+          className={`shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center text-white  ${
             type === "file" ? "bg-blue-600" : "bg-sky-500"
           }`}
         >

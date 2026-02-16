@@ -169,7 +169,7 @@ export default function SubjectsPage() {
         <div className="relative mb-8 group">
           <input
             type="text"
-            className="block w-full p-4 pr-12 text-lg text-slate-900 dark:text-slate-100 border-none rounded-2xl bg-white/80 dark:bg-slate-900/70 backdrop-blur-xl shadow-lg shadow-blue-100/60 focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-900 transition-all"
+            className="block w-full p-4 pr-12 text-lg text-slate-900 dark:text-slate-100 border-none rounded-2xl bg-white/80 dark:bg-slate-900/70 backdrop-blur-xl   focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-900 transition-all"
             placeholder="ابحث برمز المادة أو الاسم..."
             value={searchQuery}
             onChange={(e) => {
@@ -217,11 +217,11 @@ export default function SubjectsPage() {
                   >
                     <Link
                       href={`/subjects/${subject.code}`}
-                      className="group flex flex-col md:flex-row items-center justify-between bg-white/80 dark:bg-slate-900/70 backdrop-blur-md p-4 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-blue-200 dark:hover:border-blue-500/40 hover:scale-[1.01] transition-all duration-300"
+                      className="group flex flex-col md:flex-row items-center justify-between bg-white/80 dark:bg-slate-900/70 backdrop-blur-md p-4 rounded-3xl border border-slate-200 dark:border-slate-700   hover:border-blue-200 dark:hover:border-blue-500/40 hover:scale-[1.01] transition-all duration-300"
                     >
                       <div className="flex items-center gap-4 w-full md:w-auto text-right">
                         <div
-                          className={`w-14 h-14 ${subject.color} rounded-2xl flex items-center justify-center text-white font-black text-sm shadow-lg shadow-blue-100`}
+                          className={`w-14 h-14 ${subject.color} rounded-2xl flex items-center justify-center text-white font-black text-sm  `}
                         >
                           {subject.code}
                         </div>
@@ -245,7 +245,7 @@ export default function SubjectsPage() {
                           </div>
                         </div>
 
-                        <div className="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-800 group-hover:bg-blue-600 flex items-center justify-center text-slate-400 group-hover:text-white transition-all shadow-inner">
+                        <div className="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-800 group-hover:bg-blue-600 flex items-center justify-center text-slate-400 group-hover:text-white transition-all ">
                           <ArrowLeft
                             className="w-5 h-5 rtl:rotate-180"
                             strokeWidth={3}

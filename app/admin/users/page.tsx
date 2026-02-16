@@ -195,7 +195,7 @@ export default function UsersManagement() {
     >
       {/* Breadcrumb العلوية */}
       <nav className="mb-8 flex justify-start" aria-label="Breadcrumb">
-        <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse bg-white/70 dark:bg-slate-900/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/60 dark:border-slate-700/60 shadow-sm">
+        <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse bg-white/70 dark:bg-slate-900/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/60 dark:border-slate-700/60 ">
           <li className="inline-flex items-center">
             <Link
               href="/"
@@ -239,7 +239,7 @@ export default function UsersManagement() {
         </div>
         <button
           onClick={() => handleOpenModal("create")}
-          className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-2xl font-bold text-sm shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all active:scale-95"
+          className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-2xl font-bold text-sm   hover:bg-blue-700 transition-all active:scale-95"
         >
           <UserPlus className="w-5 h-5" />
           إضافة مستخدم جديد
@@ -247,7 +247,7 @@ export default function UsersManagement() {
       </header>
 
       <main className="max-w-6xl mx-auto">
-        <div className="bg-white/90 dark:bg-slate-900/70 rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="bg-white/90 dark:bg-slate-900/70 rounded-[2.5rem]  border border-slate-200 dark:border-slate-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-right border-collapse">
               <thead>
@@ -391,7 +391,7 @@ export default function UsersManagement() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="relative bg-white dark:bg-slate-900/90 rounded-[2.5rem] p-8 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto"
+              className="relative bg-white dark:bg-slate-900/90 rounded-[2.5rem] p-8 w-full max-w-lg  max-h-[90vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100">
@@ -512,7 +512,7 @@ export default function UsersManagement() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold text-sm shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold text-sm   hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {isSubmitting
                       ? "جاري الحفظ..."

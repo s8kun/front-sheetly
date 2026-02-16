@@ -166,7 +166,7 @@ export default function SubjectsLayout({
       <aside
         className={`fixed top-0 right-0 z-110 h-screen transition-all duration-300 ease-in-out transform 
                 ${isSidebarOpen ? "translate-x-0" : "translate-x-full"} 
-                lg:translate-x-0 lg:sticky bg-white/90 dark:bg-slate-900/80 border-l border-slate-200 dark:border-slate-700 shrink-0 shadow-2xl lg:shadow-none
+                lg:translate-x-0 lg:sticky bg-white/90 dark:bg-slate-900/80 border-l border-slate-200 dark:border-slate-700 shrink-0  
                 ${isCollapsed ? "lg:w-20" : "lg:w-72"}`}
       >
         <div className="h-full flex flex-col overflow-hidden">
@@ -179,7 +179,7 @@ export default function SubjectsLayout({
                 href="/"
                 className="flex items-center gap-3 overflow-hidden"
               >
-                <div className="w-9 h-9 bg-linear-to-tr from-blue-600 to-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-xl flex-shrink-0 shadow-lg">
+                <div className="w-9 h-9 bg-linear-to-tr from-blue-600 to-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-xl flex-shrink-0 ">
                   ش
                 </div>
                 <h1 className="text-xl font-black text-slate-900 dark:text-slate-100 whitespace-nowrap">
@@ -237,7 +237,7 @@ export default function SubjectsLayout({
                   title={isCollapsed ? item.name : ""}
                   className={`flex items-center gap-4 p-3.5 rounded-2xl transition-all duration-300 group ${
                     isActive
-                      ? "bg-blue-600 text-white shadow-xl shadow-blue-100 font-bold"
+                      ? "bg-blue-600 text-white   font-bold"
                       : "text-slate-500 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-blue-600"
                   } ${isCollapsed ? "justify-center px-0" : ""}`}
                 >
@@ -258,7 +258,7 @@ export default function SubjectsLayout({
             {/* Community Support Card - Moved inside nav but at the end of items */}
             {!isCollapsed && !isAdmin && (
               <div className="pt-6 pb-2 px-1">
-                <div className="bg-slate-900 rounded-[2rem] p-5 text-white relative overflow-hidden group shadow-xl shadow-slate-200">
+                <div className="bg-slate-900 rounded-[2rem] p-5 text-white relative overflow-hidden group  ">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-blue-600/20 rounded-full -mr-12 -mt-12 blur-2xl group-hover:bg-blue-600/30 transition-colors" />
                   <div className="relative z-10 text-right">
                     <h4 className="font-bold text-sm mb-1.5 flex items-center justify-end gap-2">
@@ -271,7 +271,7 @@ export default function SubjectsLayout({
                     <Link
                       href="/subjects/upload"
                       onClick={() => setIsSidebarOpen(false)}
-                      className="flex items-center justify-center w-full py-2.5 bg-blue-600 hover:bg-blue-500 active:scale-95 rounded-xl text-[10px] font-bold transition-all shadow-lg shadow-blue-900/20"
+                      className="flex items-center justify-center w-full py-2.5 bg-blue-600 hover:bg-blue-500 active:scale-95 rounded-xl text-[10px] font-bold transition-all  "
                     >
                       ارفع شيت الآن
                     </Link>
@@ -318,7 +318,7 @@ export default function SubjectsLayout({
           <div className="max-w-6xl mx-auto p-6 md:p-10">
             {/* Dynamic Breadcrumbs */}
             <nav className="mb-8 flex" aria-label="Breadcrumb">
-              <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse bg-white/70 dark:bg-slate-900/60 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/60 dark:border-slate-700/60 shadow-sm">
+              <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse bg-white/70 dark:bg-slate-900/60 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/60 dark:border-slate-700/60 ">
                 <li className="inline-flex items-center">
                   <Link
                     href="/"

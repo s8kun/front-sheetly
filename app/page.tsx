@@ -45,7 +45,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 md:px-6 h-20 flex justify-between items-center">
           {/* الشعار */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-tr from-blue-600 to-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/30">
+            <div className="w-8 h-8 bg-gradient-to-tr from-blue-600 to-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-lg  ">
               ش
             </div>
             <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
@@ -85,7 +85,7 @@ export default function Home() {
                   )}
                   <Link
                     href={isAdmin ? "/admin/dashboard" : "/subjects"}
-                    className={`${isAdmin ? "bg-slate-900 shadow-slate-200" : "bg-blue-600 shadow-blue-100"} text-white px-4 md:px-5 py-2 rounded-xl font-bold text-xs md:text-sm hover:scale-105 transition-all shadow-lg`}
+                    className={`${isAdmin ? "bg-slate-900 " : "bg-blue-600 "} text-white px-4 md:px-5 py-2 rounded-xl font-bold text-xs md:text-sm hover:scale-105 transition-all `}
                   >
                     {isAdmin ? "لوحة التحكم" : "عرض المواد"}
                   </Link>
@@ -115,7 +115,7 @@ export default function Home() {
                   </Link>
                   <Link
                     href="/register"
-                    className="bg-slate-900 text-white px-5 py-2 rounded-full font-bold shadow-lg text-sm hover:bg-slate-800 transition-all"
+                    className="bg-slate-900 text-white px-5 py-2 rounded-full font-bold  text-sm hover:bg-slate-800 transition-all"
                   >
                     انضم إلينا
                   </Link>
@@ -169,7 +169,7 @@ export default function Home() {
                         : "/subjects"
                       : "/register"
                   }
-                  className="flex items-center justify-center bg-gradient-to-r from-blue-600 to-blue-500 text-white px-12 py-4 rounded-2xl font-black text-xl hover:shadow-2xl hover:shadow-blue-500/30 hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto shadow-xl"
+                  className="flex items-center justify-center bg-gradient-to-r from-blue-600 to-blue-500 text-white px-12 py-4 rounded-2xl font-black text-xl   hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto "
                 >
                   {user
                     ? isAdmin

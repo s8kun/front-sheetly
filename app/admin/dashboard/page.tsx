@@ -180,21 +180,21 @@ export default function AdminDashboard() {
       value: stats.pending,
       icon: Clock,
       color: "bg-blue-500",
-      shadow: "shadow-blue-200/50",
+      shadow: "",
     },
     {
       title: "إجمالي المواد",
       value: stats.subjects,
       icon: BookOpen,
       color: "bg-blue-600 dark:bg-blue-500",
-      shadow: "shadow-blue-200/50 dark:shadow-none",
+      shadow: " ",
     },
     {
       title: "المستخدمين",
       value: stats.users,
       icon: Users,
       color: "bg-sky-500",
-      shadow: "shadow-sky-200/50",
+      shadow: "",
     },
   ];
 
@@ -208,7 +208,7 @@ export default function AdminDashboard() {
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
           <div>
             <nav className="mb-3" aria-label="Breadcrumb">
-              <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse bg-white/70 dark:bg-slate-900/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/60 dark:border-slate-700/60 shadow-sm">
+              <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse bg-white/70 dark:bg-slate-900/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/60 dark:border-slate-700/60 ">
                 <li className="inline-flex items-center">
                   <Link
                     href="/"
@@ -238,7 +238,7 @@ export default function AdminDashboard() {
           <div className="flex flex-wrap gap-3 w-full md:w-auto">
             <button
               onClick={() => setShowAddSubject(true)}
-              className="flex-1 md:flex-none px-6 py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-2xl font-bold text-sm shadow-lg shadow-blue-200/50 dark:shadow-none transition-all flex items-center justify-center gap-2"
+              className="flex-1 md:flex-none px-6 py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-2xl font-bold text-sm    transition-all flex items-center justify-center gap-2"
             >
               <Plus className="w-5 h-5" />
               إضافة مادة
@@ -268,14 +268,14 @@ export default function AdminDashboard() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 shadow-sm dark:shadow-none flex flex-col gap-4 relative overflow-hidden group transition-colors"
+              className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-700   flex flex-col gap-4 relative overflow-hidden group transition-colors"
             >
               <div
                 className={`absolute top-0 left-0 w-2 h-full ${stat.color}`}
               />
               <div className="flex justify-between items-start">
                 <div
-                  className={`w-12 h-12 ${stat.color} rounded-2xl flex items-center justify-center text-white shadow-lg ${stat.shadow}`}
+                  className={`w-12 h-12 ${stat.color} rounded-2xl flex items-center justify-center text-white  ${stat.shadow}`}
                 >
                   <stat.icon className="w-6 h-6" />
                 </div>
@@ -320,7 +320,7 @@ export default function AdminDashboard() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
-                    className="bg-white dark:bg-slate-800 p-5 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md dark:shadow-none transition-all group"
+                    className="bg-white dark:bg-slate-800 p-5 rounded-[2rem] border border-slate-200 dark:border-slate-700    transition-all group"
                   >
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                       <div className="flex items-center gap-4 flex-1">
@@ -360,7 +360,7 @@ export default function AdminDashboard() {
                         <button
                           onClick={() => handleAction(sheet.id, "approve")}
                           disabled={actionLoading === sheet.id}
-                          className="flex-1 sm:flex-none px-8 py-3 bg-blue-600 dark:bg-blue-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-blue-100 dark:shadow-none hover:bg-blue-700 dark:hover:bg-blue-500 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                          className="flex-1 sm:flex-none px-8 py-3 bg-blue-600 dark:bg-blue-600 text-white rounded-xl font-bold text-sm    hover:bg-blue-700 dark:hover:bg-blue-500 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                         >
                           {actionLoading === sheet.id ? (
                             "..."
@@ -404,7 +404,7 @@ export default function AdminDashboard() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="relative bg-white dark:bg-slate-800 rounded-[2.5rem] p-8 w-full max-w-md shadow-2xl border border-white/20"
+              className="relative bg-white dark:bg-slate-800 rounded-[2.5rem] p-8 w-full max-w-md  border border-white/20"
             >
               <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-6">
                 إضافة مادة جديدة
@@ -449,7 +449,7 @@ export default function AdminDashboard() {
                   <button
                     type="submit"
                     disabled={isAddingSubject}
-                    className="flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold shadow-lg shadow-blue-200/50 dark:shadow-none transition-colors"
+                    className="flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold    transition-colors"
                   >
                     {isAddingSubject ? "جاري..." : "حفظ"}
                   </button>
