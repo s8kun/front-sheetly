@@ -151,15 +151,15 @@ export default function UploadPage() {
 
   return (
     <div className={`max-w-2xl mx-auto py-10 px-6 ${cairo.className}`}>
-      <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+      <div className="bg-white/90 dark:bg-slate-900/70 rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-slate-700">
         <header className="text-center mb-8">
-          <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 mx-auto mb-4">
+          <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mx-auto mb-4">
             <UploadCloud className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-black text-slate-800">
+          <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">
             ساهم في نشر المعرفة
           </h1>
-          <p className="text-slate-500 mt-2 text-sm">
+          <p className="text-slate-500 dark:text-slate-300 mt-2 text-sm">
             برفعك لهذا الشيت، أنت تساعد زملائك وتسهل عليهم رحلتهم الدراسية 🌟
           </p>
         </header>
@@ -169,10 +169,10 @@ export default function UploadPage() {
             <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-10 h-10" />
             </div>
-            <h2 className="text-xl font-bold text-slate-800">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
               تم الرفع بنجاح!
             </h2>
-            <p className="text-slate-500 mt-2">
+            <p className="text-slate-500 dark:text-slate-300 mt-2">
               سيتم مراجعة الملف من قبل الإدارة والموافقة عليه قريباً.
             </p>
           </div>
@@ -185,14 +185,14 @@ export default function UploadPage() {
             )}
 
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">
+              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
                 عنوان الشيت
               </label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
                 placeholder="مثال: شابتر 1 - ميكانيكا 2"
                 required
               />
@@ -200,13 +200,13 @@ export default function UploadPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
                   المادة
                 </label>
                 <select
                   value={subjectId}
                   onChange={(e) => setSubjectId(e.target.value)}
-                  className="w-full p-3 rounded-xl border border-slate-200 outline-none"
+                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
                   required
                 >
                   <option value="">اختر المادة</option>
@@ -218,13 +218,13 @@ export default function UploadPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
                   نوع الملف
                 </label>
                 <select
                   value={type}
                   onChange={(e) => setType(e.target.value)}
-                  className="w-full p-3 rounded-xl border border-slate-200 outline-none"
+                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
                 >
                   <option value="chapter">شابتر</option>
                   <option value="midterm">جزئي</option>
@@ -234,10 +234,10 @@ export default function UploadPage() {
             </div>
 
             <div className="relative">
-              <label className="block text-sm font-bold text-slate-700 mb-2">
+              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
                 اختر الملف (PDF أو DOCX)
               </label>
-              <label className="mt-1 flex justify-center px-6 pt-10 pb-10 border-2 border-slate-200 border-dashed rounded-4xl hover:border-indigo-400 hover:bg-indigo-50/30 transition-all cursor-pointer group">
+              <label className="mt-1 flex justify-center px-6 pt-10 pb-10 border-2 border-slate-200 dark:border-slate-700 border-dashed rounded-4xl hover:border-blue-400 hover:bg-blue-50/30 dark:hover:bg-blue-500/10 transition-all cursor-pointer group">
                 <input
                   type="file"
                   className="sr-only"
@@ -245,16 +245,16 @@ export default function UploadPage() {
                   accept=".pdf,.docx,.doc"
                 />
                 <div className="space-y-2 text-center">
-                  <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 group-hover:bg-indigo-100 transition-all">
-                    <UploadCloud className="w-8 h-8 text-slate-400 group-hover:text-indigo-600" />
+                  <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 group-hover:bg-blue-100 dark:group-hover:bg-blue-500/20 transition-all">
+                    <UploadCloud className="w-8 h-8 text-slate-400 group-hover:text-blue-600" />
                   </div>
-                  <div className="text-sm text-slate-600">
-                    <span className="font-black text-indigo-600">
+                  <div className="text-sm text-slate-600 dark:text-slate-300">
+                    <span className="font-black text-blue-600">
                       اضغط لرفع الملف
                     </span>
                     <span className="mr-1">أو اسحب وأفلت هنا</span>
                   </div>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-400 dark:text-slate-500">
                     {file ? (
                       <span className="text-green-600 font-bold bg-green-50 px-3 py-1 rounded-full">
                         تم اختيار: {file.name}
@@ -272,8 +272,8 @@ export default function UploadPage() {
               disabled={isLoading}
               className={`w-full py-4 rounded-2xl font-black text-white shadow-lg transition-all ${
                 isLoading
-                  ? "bg-indigo-300 cursor-not-allowed"
-                  : "bg-indigo-600 hover:bg-indigo-700 hover:scale-[1.02] shadow-indigo-200"
+                  ? "bg-blue-300 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700 hover:scale-[1.02] shadow-blue-200"
               }`}
             >
               {isLoading ? "جاري الرفع..." : "تأكيد الرفع والمساهمة"}
