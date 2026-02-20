@@ -9,7 +9,6 @@ import Cookies from "js-cookie";
 import {
   Users,
   UserPlus,
-  Search,
   Edit2,
   Trash2,
   ChevronRight,
@@ -22,42 +21,87 @@ import {
   Home,
 } from "lucide-react";
 import { User } from "@/app/types";
+import { useToast } from "@/components/ToastProvider";
+import { toArabicApiError } from "@/lib/api-errors";
+import { useForm } from "react-hook-form";
+
+interface UserFormValues {
+  name: string;
+  email: string;
+  role: string;
+  password?: string;
+  password_confirmation?: string;
+}
 
 const cairo = Cairo({
   subsets: ["arabic"],
   weight: ["400", "600", "700", "900"],
 });
 
+/**
+ * مكون صفحة إدارة المستخدمين (UsersManagement).
+ *
+ * لوحة تحكم مخصصة للأدمن فقط، تتيح عرض جميع المستخدمين (طلاب ومدراء)
+ * في شكل جدول مع دعم تقسيم الصفحات (Pagination). يتيح المكون أيضاً
+ * وظائف إضافة مستخدم جديد، تعديل بيانات/كلمة مرور مستخدم قائم، وحذفه كلياً.
+ *
+ * الحالة (State):
+ * - `users`: مصفوفة المستخدمين المعروضين في الصفحة الحالية.
+ * - `pagination`: بيانات التقسيم، مثل رقم الصفحة النهائية لمعرفة حدود التنقل.
+ * - `isLoading`: لتمكين تأثير تحميل الهيكل العظمي للجدول.
+ * - `currentPage`: الصفحة المعروضة حالياً، وتغيرها يعيد جلب البيانات.
+ * - `showModal` & `modalMode`: متغيرات للتحكم بظهور النافذة المنبثقة (Modal) ومعرفة الغرض منها (إنشاء أو تعديل).
+ * - `selectedUser`: يخزن بيانات المستخدم المحدد أثناء التعديل.
+ * - `formData`: كائن يحتوي على حقول الإدخال الحية لنموذج إضافة/تعديل المستخدم.
+ *
+ * الميزات:
+ * - التحقق الإجباري من أذونات المستخدم `role === "admin"` وتوجيهه بخلاف ذلك.
+ * - ربط تلقائي برسائل الـ Toast المخصصة لإعلام المدير بنجاح أو فشل العمليات.
+ *
+ * @returns {JSX.Element} واجهة إدارة حسابات الطلاب والمدراء.
+ */
 export default function UsersManagement() {
   const router = useRouter();
+  const { showToast } = useToast();
 
   // States
   const [users, setUsers] = useState<User[]>([]);
-  const [pagination, setPagination] = useState<any>(null);
+  const [pagination, setPagination] = useState<{ last_page: number } | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
-
   // Modal States
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    role: "student",
-    password: "",
-    password_confirmation: "",
+
+  const {
+    register,
+    handleSubmit: handleFormSubmit,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm<UserFormValues>({
+    defaultValues: {
+      name: "",
+      email: "",
+      role: "student",
+      password: "",
+      password_confirmation: "",
+    },
   });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     checkAuthAndFetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
   const checkAuthAndFetch = () => {
-    const savedUser = localStorage.getItem("user");
+    const savedUser = Cookies.get("user");
     const token = Cookies.get("token");
 
     if (!savedUser || !token) {
@@ -101,7 +145,7 @@ export default function UsersManagement() {
     setError("");
     if (mode === "edit" && user) {
       setSelectedUser(user);
-      setFormData({
+      reset({
         name: user.name,
         email: user.email,
         role: user.role,
@@ -110,7 +154,7 @@ export default function UsersManagement() {
       });
     } else {
       setSelectedUser(null);
-      setFormData({
+      reset({
         name: "",
         email: "",
         role: "student",
@@ -121,8 +165,7 @@ export default function UsersManagement() {
     setShowModal(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: UserFormValues) => {
     setIsSubmitting(true);
     setError("");
     const token = Cookies.get("token");
@@ -135,6 +178,17 @@ export default function UsersManagement() {
     const method = modalMode === "create" ? "POST" : "PUT";
 
     try {
+      const payload: Record<string, string> = {
+        name: data.name,
+        email: data.email,
+        role: data.role,
+      };
+
+      if (data.password && data.password_confirmation) {
+        payload.password = data.password;
+        payload.password_confirmation = data.password_confirmation;
+      }
+
       const res = await fetch(url, {
         method,
         headers: {
@@ -142,22 +196,31 @@ export default function UsersManagement() {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      const responseData = await res.json();
 
       if (res.ok) {
         setShowModal(false);
         fetchUsers(token!);
+        showToast(
+          modalMode === "create" ? "تم إنشاء المستخدم" : "تم تحديث المستخدم",
+          "success",
+        );
       } else {
-        if (data.errors) {
-          setError(Object.values(data.errors).flat()[0] as string);
+        if (responseData.errors) {
+          setError(
+            toArabicApiError(
+              Object.values(responseData.errors).flat()[0] as string,
+              "حدث خطأ في البيانات.",
+            ),
+          );
         } else {
-          setError(data.message || "حدث خطأ ما");
+          setError(toArabicApiError(responseData.message, "حدث خطأ ما"));
         }
       }
-    } catch (err) {
+    } catch {
       setError("فشل الاتصال بالسيرفر");
     } finally {
       setIsSubmitting(false);
@@ -179,27 +242,28 @@ export default function UsersManagement() {
 
       if (res.ok) {
         fetchUsers(token!);
+        showToast("تم حذف المستخدم", "success");
       } else {
         const data = await res.json();
-        alert(data.message || "فشل حذف المستخدم");
+        showToast(toArabicApiError(data.message, "فشل حذف المستخدم"), "error");
       }
-    } catch (error) {
-      alert("خطأ في الاتصال");
+    } catch {
+      showToast("خطأ في الاتصال", "error");
     }
   };
 
   return (
     <div
       dir="rtl"
-      className={`${cairo.className} min-h-screen bg-[var(--background)] text-[var(--foreground)] p-6 md:p-10`}
+      className={`${cairo.className} min-h-screen page-shell p-6 md:p-10`}
     >
       {/* Breadcrumb العلوية */}
       <nav className="mb-8 flex justify-start" aria-label="Breadcrumb">
-        <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse bg-white/70 dark:bg-slate-900/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/60 dark:border-slate-700/60 ">
+        <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse bg-[#f7fbff] px-4 py-2 rounded-full border border-[#d9e6f8]">
           <li className="inline-flex items-center">
             <Link
               href="/"
-              className="inline-flex items-center text-xs font-bold text-slate-500 dark:text-slate-300 hover:text-blue-600 transition-colors"
+              className="inline-flex items-center text-xs font-bold text-muted hover:text-primary"
             >
               <Home className="w-3.5 h-3.5 ml-1.5" />
               الرئيسية
@@ -210,7 +274,7 @@ export default function UsersManagement() {
               <span className="mx-1 text-slate-300">/</span>
               <Link
                 href="/admin/dashboard"
-                className="inline-flex items-center text-xs font-bold text-slate-500 dark:text-slate-300 hover:text-blue-600 transition-colors"
+                className="inline-flex items-center text-xs font-bold text-muted hover:text-primary"
               >
                 لوحة التحكم
               </Link>
@@ -228,18 +292,16 @@ export default function UsersManagement() {
         </ol>
       </nav>
 
-      <header className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+      <header className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100">
+          <h1 className="text-3xl font-black text-foreground">
             إدارة المستخدمين
           </h1>
-          <p className="text-slate-500 dark:text-slate-300">
-            عرض وإضافة وتعديل صلاحيات المستخدمين
-          </p>
+          <p className="text-muted">عرض وإضافة وتعديل صلاحيات المستخدمين</p>
         </div>
         <button
           onClick={() => handleOpenModal("create")}
-          className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-2xl font-bold text-sm   hover:bg-blue-700 transition-all active:scale-95"
+          className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg font-bold text-sm hover:bg-primary-hover"
         >
           <UserPlus className="w-5 h-5" />
           إضافة مستخدم جديد
@@ -247,21 +309,15 @@ export default function UsersManagement() {
       </header>
 
       <main className="max-w-6xl mx-auto">
-        <div className="bg-white/90 dark:bg-slate-900/70 rounded-[2.5rem]  border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="bg-white rounded-lg border border-border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-right border-collapse">
               <thead>
-                <tr className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-700">
-                  <th className="p-6 font-bold text-slate-600 dark:text-slate-300">
-                    المستخدم
-                  </th>
-                  <th className="p-6 font-bold text-slate-600 dark:text-slate-300">
-                    الرتبة
-                  </th>
-                  <th className="p-6 font-bold text-slate-600 dark:text-slate-300">
-                    تاريخ الانضمام
-                  </th>
-                  <th className="p-6 font-bold text-slate-600 dark:text-slate-300 text-center">
+                <tr className="bg-slate-50 border-b border-border">
+                  <th className="p-6 font-bold text-muted">المستخدم</th>
+                  <th className="p-6 font-bold text-muted">الرتبة</th>
+                  <th className="p-6 font-bold text-muted">تاريخ الانضمام</th>
+                  <th className="p-6 font-bold text-muted text-center">
                     الإجراءات
                   </th>
                 </tr>
@@ -283,12 +339,12 @@ export default function UsersManagement() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors"
+                        className="border-b border-slate-100 hover:bg-slate-50"
                       >
                         <td className="p-6">
                           <div className="flex items-center gap-3">
                             <div
-                              className={`w-10 h-10 rounded-full flex items-center justify-center ${user.role === "admin" ? "bg-blue-100 text-blue-600" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}
+                              className={`w-10 h-10 rounded-full flex items-center justify-center ${user.role === "admin" ? "bg-blue-100 text-primary" : "bg-slate-100 text-slate-600"}`}
                             >
                               {user.role === "admin" ? (
                                 <Shield className="w-5 h-5" />
@@ -297,10 +353,10 @@ export default function UsersManagement() {
                               )}
                             </div>
                             <div>
-                              <div className="font-bold text-slate-900 dark:text-slate-100">
+                              <div className="font-bold text-foreground">
                                 {user.name}
                               </div>
-                              <div className="text-xs text-slate-400 dark:text-slate-400">
+                              <div className="text-xs text-slate-500">
                                 {user.email}
                               </div>
                             </div>
@@ -308,12 +364,12 @@ export default function UsersManagement() {
                         </td>
                         <td className="p-6">
                           <span
-                            className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${user.role === "admin" ? "bg-blue-50 text-blue-600" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"}`}
+                            className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${user.role === "admin" ? "bg-blue-50 text-primary" : "bg-slate-100 text-slate-600"}`}
                           >
                             {user.role === "admin" ? "أدمن" : "طالب"}
                           </span>
                         </td>
-                        <td className="p-6 text-sm text-slate-500 dark:text-slate-400">
+                        <td className="p-6 text-sm text-muted">
                           {new Date(user.created_at).toLocaleDateString(
                             "ar-LY",
                           )}
@@ -340,7 +396,7 @@ export default function UsersManagement() {
                     <tr>
                       <td
                         colSpan={4}
-                        className="p-20 text-center text-slate-400 dark:text-slate-500 font-medium"
+                        className="p-20 text-center text-slate-500 font-medium"
                       >
                         لا يوجد مستخدمين لعرضهم
                       </td>
@@ -353,21 +409,21 @@ export default function UsersManagement() {
 
           {/* Pagination */}
           {pagination && pagination.last_page > 1 && (
-            <div className="p-6 bg-slate-50/50 dark:bg-slate-800/50 flex justify-center items-center gap-4">
+            <div className="p-6 bg-slate-50 flex justify-center items-center gap-4">
               <button
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage((prev) => prev - 1)}
-                className="p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl disabled:opacity-30 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                className="p-2 bg-white border border-border rounded-lg disabled:opacity-30 hover:bg-slate-50"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
-              <span className="text-sm font-bold text-slate-600 dark:text-slate-300">
+              <span className="text-sm font-bold text-muted">
                 صفحة {currentPage} من {pagination.last_page}
               </span>
               <button
                 disabled={currentPage === pagination.last_page}
                 onClick={() => setCurrentPage((prev) => prev + 1)}
-                className="p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl disabled:opacity-30 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                className="p-2 bg-white border border-border rounded-lg disabled:opacity-30 hover:bg-slate-50"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -379,29 +435,29 @@ export default function UsersManagement() {
       {/* Modal إضافة/تعديل مستخدم */}
       <AnimatePresence>
         {showModal && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-200 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowModal(false)}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/40"
             />
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="relative bg-white dark:bg-slate-900/90 rounded-[2.5rem] p-8 w-full max-w-lg  max-h-[90vh] overflow-y-auto"
+              className="relative bg-white rounded-lg p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100">
+                <h2 className="text-2xl font-black text-foreground">
                   {modalMode === "create"
                     ? "إضافة مستخدم جديد"
                     : "تعديل بيانات المستخدم"}
                 </h2>
                 <button
                   onClick={() => setShowModal(false)}
-                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all"
+                  className="p-2 hover:bg-slate-100 rounded-full"
                 >
                   <X className="w-6 h-6 text-slate-400" />
                 </button>
@@ -414,48 +470,50 @@ export default function UsersManagement() {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleFormSubmit(onSubmit)} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="block text-sm font-bold text-foreground mb-2">
                     الاسم بالكامل
                   </label>
                   <input
                     type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    className="w-full p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-slate-100"
+                    {...register("name", { required: "يرجى كتابة الاسم" })}
+                    className="field"
                     placeholder="الاسم الثلاثي"
                   />
+                  {errors.name && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.name.message}
+                    </p>
+                  )}
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="block text-sm font-bold text-foreground mb-2">
                     البريد الإلكتروني
                   </label>
                   <input
                     type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                    className="w-full p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-slate-100"
-                    placeholder="example@uob.edu.ly"
+                    {...register("email", {
+                      required: "البريد الإلكتروني مطلوب",
+                      pattern: {
+                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                        message: "صيغة البريد غير صحيحة",
+                      },
+                    })}
+                    className="field"
+                    placeholder="itstd.0000@uob.edu.ly"
                   />
+                  {errors.email && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="block text-sm font-bold text-foreground mb-2">
                     الصلاحية
                   </label>
-                  <select
-                    value={formData.role}
-                    onChange={(e) =>
-                      setFormData({ ...formData, role: e.target.value })
-                    }
-                    className="w-full p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold text-slate-900 dark:text-slate-100"
-                  >
+                  <select {...register("role")} className="select font-bold">
                     <option value="student">طالب</option>
                     <option value="admin">أدمن (مدير)</option>
                   </select>
@@ -463,41 +521,55 @@ export default function UsersManagement() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="block text-sm font-bold text-foreground mb-2">
                       {modalMode === "edit"
                         ? "كلمة المرور الجديدة (اختياري)"
                         : "كلمة المرور"}
                     </label>
                     <input
                       type="password"
-                      required={modalMode === "create"}
-                      value={formData.password}
-                      onChange={(e) =>
-                        setFormData({ ...formData, password: e.target.value })
-                      }
-                      className="w-full p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-slate-100"
+                      dir="ltr"
+                      {...register("password", {
+                        required:
+                          modalMode === "create" ? "كلمة المرور مطلوبة" : false,
+                        minLength: {
+                          value: 8,
+                          message: "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+                        },
+                      })}
+                      className="field font-sans"
                       placeholder="••••••••"
                     />
+                    {errors.password && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.password.message}
+                      </p>
+                    )}
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="block text-sm font-bold text-foreground mb-2">
                       تأكيد كلمة المرور
                     </label>
                     <input
                       type="password"
-                      required={
-                        modalMode === "create" || formData.password !== ""
-                      }
-                      value={formData.password_confirmation}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          password_confirmation: e.target.value,
-                        })
-                      }
-                      className="w-full p-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 dark:text-slate-100"
+                      dir="ltr"
+                      {...register("password_confirmation", {
+                        validate: (value) => {
+                          if (modalMode === "create" && !value)
+                            return "تأكيد كلمة المرور مطلوب";
+                          if (watch("password") && value !== watch("password"))
+                            return "كلمتا المرور غير متطابقتين";
+                          return true;
+                        },
+                      })}
+                      className="field font-sans"
                       placeholder="••••••••"
                     />
+                    {errors.password_confirmation && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.password_confirmation.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -505,14 +577,14 @@ export default function UsersManagement() {
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}
-                    className="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                    className="flex-1 py-4 bg-slate-100 text-foreground rounded-lg font-bold text-sm hover:bg-slate-200"
                   >
                     إلغاء
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold text-sm   hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex-1 py-4 bg-primary text-white rounded-lg font-bold text-sm hover:bg-primary-hover disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {isSubmitting
                       ? "جاري الحفظ..."

@@ -1,15 +1,27 @@
 "use client";
 
+/**
+ * مكون التذييل (Footer) الذي يظهر في أسفل الصفحة.
+ *
+ * يحتوي على حقوق النشر الخاصة بـ "شيتاتي" وروابط التواصل الاجتماعي أو المستودعات
+ * (مثل تيليجرام، جيت هاب، لينكد إن).
+ *
+ * @returns {JSX.Element} واجهة التذييل.
+ */
 export default function Footer() {
   return (
-    <footer className="w-full py-6 mt-10 opacity-70 hover:opacity-100 transition-opacity duration-300">
-      <div className="max-w-4xl mx-auto flex flex-col items-center justify-center gap-3">
-        {/* روابط التواصل - تظهر فقط عند الحاجة */}
+    <footer className="w-full border-t border-border bg-white mt-8">
+      <div className="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <p className="text-xs text-muted font-medium text-center sm:text-right">
+          شيتاتي © 2026 - منصة شيتات طلاب تقنية المعلومات بجامعة بنغازي
+        </p>
+
         <div className="flex items-center gap-4">
           <a
             href="http://t.me/wrq7z"
             target="_blank"
-            className="text-slate-400 hover:text-blue-500 transition-colors"
+            rel="noreferrer"
+            className="text-slate-500 hover:text-primary"
             title="Telegram"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -19,7 +31,8 @@ export default function Footer() {
           <a
             href="https://github.com/s8kun"
             target="_blank"
-            className="text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 transition-colors"
+            rel="noreferrer"
+            className="text-slate-500 hover:text-primary"
             title="GitHub"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -29,7 +42,8 @@ export default function Footer() {
           <a
             href="https://linkedin.com/in/abdullah-elferjani-470a6b2b1"
             target="_blank"
-            className="text-slate-400 hover:text-blue-600 transition-colors"
+            rel="noreferrer"
+            className="text-slate-500 hover:text-primary"
             title="LinkedIn"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -37,13 +51,6 @@ export default function Footer() {
             </svg>
           </a>
         </div>
-
-        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
-          Sheetly © 2026 • Developed by{" "}
-          <span className="text-slate-500 dark:text-slate-300">
-            Abdullah Elferjani
-          </span>
-        </p>
       </div>
     </footer>
   );

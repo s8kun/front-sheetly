@@ -4,50 +4,70 @@ import React, { useState } from "react";
 import { Cairo } from "next/font/google";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
-import { Home, UserPlus } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { toArabicApiError } from "@/lib/api-errors";
+
+interface RegisterFormValues {
+  name: string;
+  studentId: string;
+  password: string;
+  confirmPassword: string;
+}
 
 const cairo = Cairo({
   subsets: ["arabic"],
   weight: ["400", "500", "600", "700"],
 });
 
+/**
+ * مكون صفحة التسجيل (Register).
+ *
+ * يتعامل مع إنشاء حساب طالب جديد. يتطلب إدخال الاسم الرباعي، رقم قيد صحيح،
+ * وكلمة مرور قوية مطابقة لتأكيد كلمة المرور. الـ API يعتمد على بناء البريد
+ * الجامعي (itstd.[ID]@uob.edu.ly) من رقم القيد المُدخل.
+ *
+ * الحالة (State):
+ * - `isLoading`: لتعطيل إرسال النموذج أثناء معالجة الطلب في السيرفر.
+ * - `error`: لعرض رسائل الأخطاء (مثل البريد محجوز، بيانات خاطئة).
+ *
+ * سير العمل (Flow):
+ * 1. يتحقق من صحة المدخلات محلياً (طول الاسم، توافق كلمة المرور).
+ * 2. عند الإرسال، يُركب البريد الجامعي ويرسل البيانات إلى نقطة `/register`.
+ * 3. عند نجاح الإنشاء، يحوّل المستخدم لصفحة تأكيد الرمز `/register/verify`.
+ * 4. في حال كان الحساب موجوداً ولكنه غير مفعل (403 أو 500 ورسالة مخصصة)، يحوله لتأكيد الحساب مع طلب إعادة إرسال.
+ *
+ * @returns {JSX.Element} واجهة التسجيل.
+ */
 export default function Register() {
   const router = useRouter();
-
-  // States
-  const [formData, setFormData] = useState({
-    name: "",
-    studentId: "",
-    password: "",
-    confirmPassword: "",
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<RegisterFormValues>({
+    defaultValues: {
+      name: "",
+      studentId: "",
+      password: "",
+      confirmPassword: "",
+    },
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError(""); // إخفاء الخطأ عند الكتابة
-  };
+  const passwordValue = watch("password");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (values: RegisterFormValues) => {
     setError("");
-
-    // تحقق بسيط قبل الإرسال
-    if (formData.password !== formData.confirmPassword) {
-      setError("كلمات المرور غير متطابقة.");
-      return;
-    }
 
     setIsLoading(true);
 
-    // تجهيز البيانات للباك-إند
     const payload = {
-      name: formData.name,
-      email: `itstd.${formData.studentId}@uob.edu.ly`,
-      password: formData.password,
-      password_confirmation: formData.confirmPassword,
+      name: values.name.trim(),
+      email: `itstd.${values.studentId.trim()}@uob.edu.ly`,
+      password: values.password,
+      password_confirmation: values.confirmPassword,
     };
 
     try {
@@ -63,10 +83,7 @@ export default function Register() {
 
       const data = await res.json();
 
-      // ... (inside handleSubmit after res.ok)
       if (res.ok) {
-        // نجاح المرحلة الأولى من التسجيل
-        // التوجيه لصفحة التحقق مع تمرير البريد الإلكتروني
         router.push(
           `/register/verify?email=${encodeURIComponent(payload.email)}`,
         );
@@ -74,213 +91,179 @@ export default function Register() {
         res.status === 500 &&
         data.message?.includes("تم إنشاء الحساب")
       ) {
-        // حالة خاصة: الحساب تم إنشاؤه ولكن البريد لم يصل
         router.push(
           `/register/verify?email=${encodeURIComponent(payload.email)}&resend=true`,
         );
       } else {
-        // معالجة الأخطاء (422 Unprocessable Entity وغيرها)
         if (data.errors) {
-          // جلب أول رسالة خطأ
           const firstError = Object.values(data.errors)[0];
           let errorMessage = Array.isArray(firstError)
-            ? firstError[0]
-            : "بيانات غير صالحة";
+            ? String(firstError[0])
+            : String(firstError || "");
 
-          // تعريب رسالة "البريد مأخوذ مسبقاً" لتوجه المستخدم للدخول أو التأكيد
           if (errorMessage.includes("email has already been taken")) {
-            errorMessage =
-              "هذا البريد مسجل مسبقاً، يرجى تسجيل الدخول أو تأكيد الحساب.";
+            errorMessage = "هذا البريد مسجل من قبل. ادخل أو كمل تأكيد الحساب.";
           }
-          setError(errorMessage);
+          setError(toArabicApiError(errorMessage, "بيانات غير صالحة"));
         } else {
-          setError(data.message || "حدث خطأ أثناء إنشاء الحساب.");
+          setError(
+            toArabicApiError(data.message, "حدث خطأ أثناء إنشاء الحساب."),
+          );
         }
       }
     } catch (err) {
       console.error("Register Error:", err);
-      setError("فشل الاتصال بالخادم، يرجى المحاولة لاحقاً.");
+      setError("فشل الاتصال بالخادم، حاول بعد شوي.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div
-      className={`min-h-screen w-full flex md:items-center md:justify-center bg-[var(--background)] text-[var(--foreground)] relative overflow-x-hidden ${cairo.className}`}
-      dir="rtl"
-    >
-      {/* الخلفية الجمالية */}
-      <div className="hidden md:block absolute top-[-10%] right-[-10%] w-96 h-96 bg-blue-200/50 rounded-full blur-3xl mix-blend-multiply opacity-70" />
-      <div className="hidden md:block absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-sky-200/50 rounded-full blur-3xl mix-blend-multiply opacity-70 delay-1000" />
-
-      <nav className="absolute top-4 right-6 z-50" aria-label="Breadcrumb">
-        <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse bg-white/70 dark:bg-slate-900/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/60 dark:border-slate-700/60 ">
-          <li className="inline-flex items-center">
-            <Link
-              href="/"
-              className="inline-flex items-center text-xs font-bold text-slate-500 dark:text-slate-300 hover:text-blue-600 transition-colors"
-            >
-              <Home className="w-3.5 h-3.5 ml-1.5" />
-              الرئيسية
-            </Link>
-          </li>
-          <li>
-            <div className="flex items-center">
-              <span className="mx-1 text-slate-400">/</span>
-              <span className="inline-flex items-center text-xs font-bold text-blue-600">
-                <UserPlus className="w-3.5 h-3.5 ml-1.5" />
-                جديد
-              </span>
-            </div>
-          </li>
-        </ol>
-      </nav>
-
-      {/* البطاقة الرئيسية */}
-      <div className="w-full h-screen md:h-auto md:max-w-lg bg-white/85 dark:bg-slate-900/80 backdrop-blur-xl md:rounded-3xl  md:border md:border-slate-200/70 dark:border-slate-700/60 flex flex-col px-6 pt-24 pb-10 md:py-10 md:px-10 relative z-10">
-        <div className="w-full mx-auto flex flex-col justify-center h-full md:h-auto">
-          <div className="text-center mb-8">
-            <div className="mx-auto w-14 h-14 bg-gradient-to-tr from-blue-600 to-blue-500 rounded-2xl flex items-center justify-center text-white font-bold text-2xl   mb-4">
-              ش
-            </div>
-            <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-              حساب جديد
-            </h2>
-            <p className="text-slate-500 dark:text-slate-300 text-sm mt-2 font-medium">
-              سجل بياناتك للبدء في استخدام النظام
-            </p>
+    <div dir="rtl" className={`page-shell ${cairo.className}`}>
+      <div className="min-h-screen flex items-center justify-center px-4 py-8">
+        <div className="panel w-full max-w-lg p-6 md:p-8">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-black">فتح حساب جديد</h1>
+            <p className="text-sm text-muted mt-2">املأ البيانات بشكل صحيح</p>
           </div>
 
-          {/* عرض رسالة الخطأ */}
-          {error && (
-            <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-medium text-center animate-pulse">
-              {error}
-            </div>
-          )}
+          {error && <div className="status-error mb-4">{error}</div>}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+              <label className="block mb-2 text-sm font-semibold">
                 الاسم الكامل
               </label>
               <input
                 type="text"
-                name="name"
                 placeholder="الاسم الثلاثي"
-                value={formData.name}
-                onChange={handleChange}
+                {...register("name", {
+                  required: "الحقل هذا ضروري",
+                  minLength: {
+                    value: 3,
+                    message: "اكتب اسمك الثلاثي بشكل صحيح",
+                  },
+                  onChange: () => setError(""),
+                })}
                 disabled={isLoading}
-                className={`block w-full h-14 rounded-2xl border ${error && !formData.name ? "border-red-300" : "border-slate-300 dark:border-slate-700"} bg-white/70 dark:bg-slate-900/60 focus:bg-white dark:focus:bg-slate-900  focus:border-blue-500 focus:ring-blue-500 text-base transition-all px-4 text-slate-900 dark:text-slate-100`}
+                className="field"
               />
+              {errors.name && (
+                <p className="text-red-600 text-sm mt-1">
+                  {errors.name.message}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+              <label className="block mb-2 text-sm font-semibold">
                 رقم القيد
               </label>
               <div
-                className={`flex items-center w-full h-14 rounded-2xl border ${error && !formData.studentId ? "border-red-300" : "border-slate-300 dark:border-slate-700"} bg-white/70 dark:bg-slate-900/60 focus-within:bg-white dark:focus-within:bg-slate-900 focus-within:ring-2 focus-within:ring-blue-500 overflow-hidden  transition-all`}
+                className="field flex items-center p-0 overflow-hidden"
                 dir="ltr"
               >
-                <span className="shrink-0 pl-3 pr-1 text-slate-500 dark:text-slate-400 font-mono text-xs md:text-sm border-r border-slate-200 dark:border-slate-700 select-none h-full flex items-center bg-slate-50/50 dark:bg-slate-800/60">
+                <span className="px-3 text-slate-500 border-e border-border bg-slate-50 h-full inline-flex items-center">
                   itstd.
                 </span>
                 <input
                   type="text"
-                  name="studentId"
                   inputMode="numeric"
                   placeholder="0000"
-                  value={formData.studentId}
-                  onChange={handleChange}
+                  {...register("studentId", {
+                    required: "الحقل هذا ضروري",
+                    pattern: {
+                      value: /^\d+$/,
+                      message: "اكتب رقم القيد صح (أرقام بس)",
+                    },
+                    minLength: {
+                      value: 4,
+                      message: "رقم القيد قصير واجد",
+                    },
+                    onChange: () => setError(""),
+                  })}
                   disabled={isLoading}
-                  className="flex-1 h-full border-0 bg-transparent text-center text-slate-900 dark:text-slate-100 placeholder:text-slate-300 focus:ring-0 text-lg font-mono tracking-widest outline-none min-w-[60px]"
+                  className="flex-1 h-full px-2 text-center outline-none"
                 />
-                <span className="shrink-0 pr-3 pl-1 text-slate-500 dark:text-slate-400 font-mono text-[10px] sm:text-xs md:text-sm border-l border-slate-200 dark:border-slate-700 select-none h-full flex items-center bg-slate-50/50 dark:bg-slate-800/60">
+                <span className="px-3 text-slate-500 border-s border-border bg-slate-50 h-full inline-flex items-center text-xs sm:text-sm">
                   @uob.edu.ly
                 </span>
               </div>
+              {errors.studentId && (
+                <p className="text-red-600 text-sm mt-1">
+                  {errors.studentId.message}
+                </p>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                <label className="block mb-2 text-sm font-semibold">
                   كلمة المرور
                 </label>
                 <input
                   type="password"
-                  name="password"
                   dir="ltr"
-                  value={formData.password}
-                  onChange={handleChange}
+                  {...register("password", {
+                    required: "الحقل هذا ضروري",
+                    minLength: {
+                      value: 8,
+                      message: "كلمة المرور قصيرة، زيد عليها شوي",
+                    },
+                    onChange: () => setError(""),
+                  })}
                   disabled={isLoading}
-                  className={`block w-full h-14 rounded-2xl border ${error && !formData.password ? "border-red-300" : "border-slate-300 dark:border-slate-700"} bg-white/70 dark:bg-slate-900/60 focus:bg-white dark:focus:bg-slate-900  focus:border-blue-500 focus:ring-blue-500 px-4 text-slate-900 dark:text-slate-100`}
+                  className="field"
                 />
+                {errors.password && (
+                  <p className="text-red-600 text-sm mt-1">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
               <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                  تأكيد الرمز
+                <label className="block mb-2 text-sm font-semibold">
+                  تأكيد كلمة المرور
                 </label>
                 <input
                   type="password"
-                  name="confirmPassword"
                   dir="ltr"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
+                  {...register("confirmPassword", {
+                    required: "الحقل هذا ضروري",
+                    validate: (value) =>
+                      value === passwordValue ||
+                      "تأكيد كلمة المرور مش نفس كلمة المرور",
+                    onChange: () => setError(""),
+                  })}
                   disabled={isLoading}
-                  className={`block w-full h-14 rounded-2xl border ${error && !formData.confirmPassword ? "border-red-300" : "border-slate-300 dark:border-slate-700"} bg-white/70 dark:bg-slate-900/60 focus:bg-white dark:focus:bg-slate-900  focus:border-blue-500 focus:ring-blue-500 px-4 text-slate-900 dark:text-slate-100`}
+                  className="field"
                 />
+                {errors.confirmPassword && (
+                  <p className="text-red-600 text-sm mt-1">
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
               </div>
             </div>
-
-            <div className="pt-4">
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full h-14 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold text-lg   hover:-translate-y-1 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
-              >
-                {isLoading ? (
-                  <>
-                    <svg
-                      className="animate-spin ml-2 h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    جاري الإنشاء...
-                  </>
-                ) : (
-                  "إنشاء حساب"
-                )}
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="btn-primary w-full disabled:opacity-70"
+            >
+              {isLoading ? "جاري الإنشاء..." : "إنشاء الحساب"}
+            </button>
           </form>
 
-          <div className="mt-8 text-center">
-            <p className="text-sm text-slate-500 dark:text-slate-300 font-medium">
-              لديك حساب بالفعل؟{" "}
-              <Link
-                href="/login"
-                className="font-bold text-blue-600 hover:underline"
-              >
-                سجل دخولك
-              </Link>
-            </p>
-          </div>
+          <p className="mt-5 text-sm text-center text-muted">
+            عندك حساب؟{" "}
+            <Link
+              href="/login"
+              className="text-primary font-bold hover:underline"
+            >
+              سجل دخول
+            </Link>
+          </p>
         </div>
       </div>
     </div>

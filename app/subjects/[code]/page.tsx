@@ -8,12 +8,39 @@ import { motion } from "framer-motion";
 import Activity from "@/components/Activity";
 import { SubjectData, Sheet } from "@/app/types";
 import Cookies from "js-cookie";
+import { fetchJsonWithCache, fetchWithRetry } from "@/lib/network";
+import { useToast } from "@/components/ToastProvider";
+
+type EnhancedSheet = Sheet & {
+  isLazy?: boolean;
+  chapterNumber?: number;
+};
+
+type ChapterItem = number | (Partial<Sheet> & { chapter_number?: number });
 
 const cairo = Cairo({
   subsets: ["arabic"],
   weight: ["400", "500", "600", "700"],
 });
 
+/**
+ * مكون تفاصيل المادة (SubjectPage).
+ *
+ * يعرض كل التفاصيل المتعلقة بمادة معينة (مثل مبادئ حوسبة IT101) ويتضمن الشباتر،
+ * امتحانات الجزئي، والامتحانات النهائية مع إمكانية التنقل بينها عبر تبويبات (Tabs).
+ * يمنح للأدمن فقط الصلاحية لحذف المادة كاملاً.
+ *
+ * يعتمد على الخطاف `use(params)` المتوفر في React 19 لحل مسارات الوصلات الديناميكية.
+ *
+ * الحالة (State):
+ * - `data`: البيانات الكاملة الواردة من API للمادة (شيتات وامتحانات وتفاصيل المادة).
+ * - `enrichedChapters`: مصفوفة منظمة تجمع معلومات الشباتر وشيتاتها في كائنات.
+ * - `user`: بيانات المستخدم الحالي المحفوظة في الـ Cookies (للتحقق من صلاحية الأدمن).
+ * - `activeTab`: حالة التبويب الحالي المقروءة من الـ URL.
+ *
+ * @param {Promise<{ code: string }>} params - معلمات الوصلة الديناميكية تحتوي على رمز المادة.
+ * @returns {JSX.Element} واجهة تفاصيل المادة ومحتواها المقسم على تبويبات.
+ */
 export default function SubjectPage({
   params,
 }: {
@@ -23,6 +50,7 @@ export default function SubjectPage({
   const subjectCode = resolvedParams.code;
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { showToast } = useToast();
 
   const activeTab =
     (searchParams.get("tab") as "chapters" | "midterms" | "finals") ||
@@ -30,8 +58,12 @@ export default function SubjectPage({
 
   const [data, setData] = useState<SubjectData | null>(null);
   // حالة جديدة لتخزين بيانات الشباتر الكاملة بعد جلبها
-  const [enrichedChapters, setEnhancedChapters] = useState<any[]>([]);
-  const [user, setUser] = useState<any>(null);
+  const [enrichedChapters, setEnhancedChapters] = useState<EnhancedSheet[]>([]);
+  const [user] = useState<{ role?: string } | null>(() => {
+    if (typeof window === "undefined") return null;
+    const savedUser = Cookies.get("user");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
@@ -42,11 +74,6 @@ export default function SubjectPage({
     params.set("tab", tab);
     router.push(`?${params.toString()}`, { scroll: false });
   };
-
-  useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) setUser(JSON.parse(savedUser));
-  }, []);
 
   const isAdmin = user?.role?.toLowerCase() === "admin";
 
@@ -70,99 +97,103 @@ export default function SubjectPage({
         },
       );
       if (res.ok) {
+        showToast("تم حذف المادة", "success");
         router.push("/subjects");
       } else {
-        alert("فشل حذف المادة");
+        showToast("فشل حذف المادة", "error");
       }
-    } catch (err) {
-      alert("خطأ في الاتصال");
+    } catch {
+      showToast("خطأ في الاتصال", "error");
     } finally {
       setIsDeleting(false);
     }
   };
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchData = async () => {
       if (!subjectCode) return;
       setLoading(true);
       const token = Cookies.get("token");
+
       try {
-        // 1. جلب بيانات المادة الأساسية
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/subjects/${subjectCode}`,
-          {
-            credentials: "include",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: "application/json",
-            },
-          },
-        );
-        if (res.ok) {
-          const result = await res.json();
-          setData(result);
-
-          // 2. إذا كان هناك شباتر (أرقام)، نقوم بجلب تفاصيلها فوراً للحصول على العدادات
-          if (result.chapters && result.chapters.length > 0) {
-            const chaptersPromises = result.chapters.map(
-              async (item: any, index: number) => {
-                if (item.file_url) return item; // إذا كان ملف جاهز، نتركه كما هو
-
-                const chapterNum =
-                  typeof item === "number"
-                    ? item
-                    : item.chapter_number || index + 1;
-                try {
-                  const chRes = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/subjects/${subjectCode}/chapters/${chapterNum}`,
-                    {
-                      credentials: "include",
-                      headers: { Authorization: `Bearer ${token}` },
-                    },
-                  );
-                  if (chRes.ok) {
-                    const chData = await chRes.json();
-                    // إذا وجدنا ملفات، نأخذ أول ملف ليكون هو ممثل الشابتر (بما في ذلك عداده)
-                    if (chData.sheets && chData.sheets.length > 0) {
-                      return {
-                        ...chData.sheets[0], // نأخذ بيانات الملف الأول (id, downloads_count, etc)
-                        title: `شابتر ${chapterNum}`, // نحافظ على الاسم كشابتر
-                        isLazy: false, // لم يعد lazy لأننا جلبناه
-                        chapterNumber: chapterNum,
-                      };
-                    }
-                  }
-                } catch (e) {
-                  console.error(e);
-                }
-
-                // في حالة الفشل أو عدم وجود ملفات، نعيد الهيكل القديم
-                return {
-                  id: `lazy-ch-${chapterNum}`,
-                  title: `شابتر ${chapterNum}`,
-                  chapterNumber: chapterNum,
-                  isLazy: true,
-                  type: "file",
-                  downloads_count: 0,
-                };
+        const result = await fetchJsonWithCache<SubjectData>(
+          `subject:detail:${subjectCode}:${(token || "guest").slice(0, 12)}`,
+          async () => {
+            const res = await fetchWithRetry(
+              `${process.env.NEXT_PUBLIC_API_URL}/subjects/${subjectCode}`,
+              {
+                credentials: "include",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  Accept: "application/json",
+                },
+                signal: controller.signal,
               },
+              { retries: 2, retryDelayMs: 600 },
             );
 
-            const fullChapters = await Promise.all(chaptersPromises);
-            setEnhancedChapters(fullChapters);
-          } else {
-            setEnhancedChapters([]);
-          }
-        } else {
-          setError("المادة غير موجودة");
-        }
+            if (!res.ok) {
+              if (res.status === 404) {
+                throw new Error("NOT_FOUND");
+              }
+              throw new Error("Failed to fetch subject details");
+            }
+
+            return res.json();
+          },
+          90_000,
+        );
+
+        setData(result);
+
+        const normalizedChapters: EnhancedSheet[] =
+          (result.chapters as ChapterItem[] | undefined)?.map(
+            (item, index: number) => {
+              if (typeof item === "object" && item !== null && item.file_url) {
+                return item as EnhancedSheet;
+              }
+
+              const chapterNum =
+                typeof item === "number"
+                  ? item
+                  : item.chapter_number || index + 1;
+
+              return {
+                id: -chapterNum,
+                title: `شابتر ${chapterNum}`,
+                chapterNumber: chapterNum,
+                isLazy: true,
+                type: "chapter",
+                file_url: "",
+                downloads_count: 0,
+                created_at: new Date().toISOString(),
+              };
+            },
+          ) || [];
+
+        setEnhancedChapters(normalizedChapters);
       } catch (err) {
-        setError("فشل الاتصال بالخادم");
+        if (!controller.signal.aborted) {
+          if (err instanceof Error && err.message === "NOT_FOUND") {
+            setError("المادة غير موجودة");
+          } else {
+            setError("فشل الاتصال بالخادم");
+          }
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
+
     fetchData();
+
+    return () => {
+      controller.abort();
+    };
   }, [subjectCode]);
 
   const midtermsData = useMemo(() => data?.midterms || [], [data]);
@@ -170,18 +201,18 @@ export default function SubjectPage({
 
   return (
     <div className={cairo.className}>
-      <main className="relative z-10">
+      <main>
         {loading ? (
           <div className="animate-pulse space-y-8">
-            <div className="h-8 bg-slate-200 rounded-full w-1/3 mx-auto"></div>
+            <div className="h-8 bg-slate-200 rounded-lg w-1/3 mx-auto"></div>
             <div className="flex justify-center gap-4">
-              <div className="h-10 bg-slate-200 rounded-lg w-24"></div>
-              <div className="h-10 bg-slate-200 rounded-lg w-24"></div>
-              <div className="h-10 bg-slate-200 rounded-lg w-24"></div>
+              <div className="h-10 bg-slate-200 rounded-lg w-24" />
+              <div className="h-10 bg-slate-200 rounded-lg w-24" />
+              <div className="h-10 bg-slate-200 rounded-lg w-24" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="h-40 bg-slate-200 rounded-2xl"></div>
+                <div key={i} className="h-40 bg-slate-200 rounded-lg" />
               ))}
             </div>
           </div>
@@ -190,7 +221,7 @@ export default function SubjectPage({
             <div className="text-red-500 font-bold text-xl mb-2">{error}</div>
             <Link
               href="/subjects"
-              className="text-blue-600 hover:underline text-sm"
+              className="text-primary hover:underline text-sm"
             >
               العودة لقائمة المواد
             </Link>
@@ -199,11 +230,11 @@ export default function SubjectPage({
           <>
             <div className="text-center mb-10 relative">
               {isAdmin && (
-                <div className="absolute left-0 top-0 flex gap-2">
+                <div className="absolute inset-s-0 top-0 flex gap-2">
                   <button
                     onClick={handleDeleteSubject}
                     disabled={isDeleting}
-                    className="p-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all "
+                    className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-600 hover:text-white"
                     title="حذف المادة"
                   >
                     <svg
@@ -222,16 +253,16 @@ export default function SubjectPage({
                   </button>
                 </div>
               )}
-              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-bold tracking-wider uppercase">
+              <span className="bg-[#eaf2ff] text-primary border border-[#c9dcff] px-3 py-1 rounded-full text-sm font-bold tracking-wider uppercase">
                 {data.subject.code}
               </span>
-              <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-slate-100 mt-3 mb-2">
+              <h1 className="text-3xl md:text-4xl font-black text-foreground mt-3 mb-2">
                 {data.subject.name}
               </h1>
             </div>
 
             <div className="flex justify-center mb-10">
-              <div className="bg-white/70 dark:bg-slate-900/60 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700  flex gap-1">
+              <div className="bg-white p-1 rounded-lg border border-border flex gap-1">
                 {[
                   { id: "chapters", label: "الشيتات" },
                   { id: "midterms", label: "جزئي" },
@@ -240,16 +271,16 @@ export default function SubjectPage({
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`relative px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                    className={`relative px-6 py-2.5 rounded-md text-sm font-bold ${
                       activeTab === tab.id
                         ? "text-white"
-                        : "text-slate-500 dark:text-slate-300 hover:text-blue-600"
+                        : "text-muted hover:text-primary"
                     }`}
                   >
                     {activeTab === tab.id && (
                       <motion.div
                         layoutId="activeTab"
-                        className="absolute inset-0 bg-blue-600 rounded-xl "
+                        className="absolute inset-0 bg-primary rounded-md"
                         transition={{
                           type: "spring",
                           bounce: 0.2,

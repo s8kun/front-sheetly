@@ -6,7 +6,7 @@ export interface Sheet {
     file_url: string;
     downloads_count: number;
     status?: 'pending' | 'approved' | 'rejected';
-    chapter_number?: number;
+    chapter_number?: number; // I remove it from the database
     created_at: string;
     subject_id?: number;
 }
@@ -29,7 +29,7 @@ export interface User {
 
 export interface SubjectData {
     subject: Subject;
-    chapters: any[];
+    chapters: unknown[];
     midterms: Sheet[];
     finals: Sheet[];
 }

@@ -10,6 +10,17 @@ interface ActivityProps {
   emptyMessage?: string;
 }
 
+/**
+ * مكون (Component) يمثل شبكة (Grid) لعرض مجموعة من العناصر (الشيتات أو الامتحانات).
+ *
+ * يغلف العناصر التي بداخله بـ `AnimatePresence` لتوفير حركات دخول وخروج سلسة (Animations)،
+ * ويعرض رسالة فارغة مخصصة في حال لم تكن هناك أي عناصر للعرض.
+ *
+ * المكون مغلف بـ `memo` لمنع إعادة التحديث (Re-rendering) غير الضروري إذا لم تتغير الخصائص المستلمة.
+ *
+ * @param {ActivityProps} props - خصائص المكون (العناصر، نوع العنصر، الرسالة الفارغة).
+ * @returns {JSX.Element} واجهة شبكة عرض العناصر.
+ */
 const Activity = memo(
   ({ items, type, emptyMessage = "لا يوجد محتوى لعرضه" }: ActivityProps) => {
     return (
@@ -27,11 +38,11 @@ const Activity = memo(
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="col-span-full flex flex-col items-center justify-center py-20 text-slate-500 dark:text-slate-400"
+              className="col-span-full flex flex-col items-center justify-center py-20 text-muted"
             >
-              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
                 <svg
-                  className="w-8 h-8 text-slate-300 dark:text-slate-500"
+                  className="w-8 h-8 text-slate-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"

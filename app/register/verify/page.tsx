@@ -1,39 +1,90 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Cairo } from "next/font/google";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Home, ShieldCheck } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { toArabicApiError } from "@/lib/api-errors";
+
+interface VerifyOtpFormValues {
+  code: string;
+}
 
 const cairo = Cairo({
   subsets: ["arabic"],
   weight: ["400", "500", "600", "700"],
 });
 
+const OTP_LENGTH = 4;
+const RESEND_COOLDOWN = 60;
+
+/**
+ * مكون صفحة تأكيد البريد الإلكتروني برمز الـ OTP.
+ *
+ * بعد التسجيل المبدئي، تصل رسالة للبريد الجامعي تحتوي على رمز 4 أرقام.
+ * هذه الصفحة تسمح للمستخدم بإدخال الرمز لتفعيل حسابه، مع إمكانية إعادة إرسال الرمز.
+ *
+ * الحالة (State):
+ * - `otp`: مصفوفة من أربع خانات تمثل الرمز المُدخل.
+ * - `isLoading`: أثناء عملية التحقق من الرمز في الخادم.
+ * - `error` & `message`: لعرض رسائل النجاح أو الفشل.
+ * - `cooldown` & `isResending`: لإدارة توقيت إعادة إرسال الرمز (60 ثانية).
+ *
+ * سير العمل (Flow):
+ * 1. الإرسال التلقائي إذا تم تعبئة جميع الخانات.
+ * 2. دعم اللصق المباشر للرمز كله (Paste).
+ * 3. عند النجاح، التوجيه لصفحة الدخول `/login`.
+ *
+ * @returns {JSX.Element} واجهة تأكيد الرمز المكونة من 4 صناديق إدخال.
+ */
 export default function VerifyOTP() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
 
-  const [otp, setOtp] = useState(["", "", "", ""]);
+  const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [isResending, setIsResending] = useState(false);
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [cooldown, setCooldown] = useState(0);
 
-  const handleResendOTP = async () => {
-    if (!email || isResending) return;
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const abortRef = useRef<AbortController | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    clearErrors,
+    formState: { errors },
+  } = useForm<VerifyOtpFormValues>({
+    defaultValues: { code: "" },
+  });
+
+  /* ---------------- Countdown ---------------- */
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+
+    const timer = setInterval(() => {
+      setCooldown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [cooldown]);
+
+  /* ---------------- Resend OTP ---------------- */
+
+  const handleResendOTP = useCallback(async () => {
+    if (!email || isResending || cooldown > 0) return;
+
     setIsResending(true);
     setError("");
     setMessage("");
 
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/resend-otp`;
-    console.log("Calling Resend OTP URL:", url);
-
     try {
-      const res = await fetch(url, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/resend-otp`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -46,68 +97,89 @@ export default function VerifyOTP() {
       const data = await res.json();
 
       if (res.ok) {
-        setMessage("تم إعادة إرسال رمز التحقق لبريدك الإلكتروني.");
+        setMessage("تمت إعادة إرسال الرمز لبريدك.");
+        setCooldown(RESEND_COOLDOWN);
       } else {
         if (res.status === 429) {
-          setError("محاولات كثيرة جداً. يرجى الانتظار دقيقة قبل طلب رمز جديد.");
+          setError("طلبات كثيرة، استنى دقيقة وحاول.");
         } else {
-          setError(
-            data.message || "فشل إعادة إرسال الرمز. يرجى المحاولة لاحقاً.",
-          );
+          setError(toArabicApiError(data.message, "فشل إرسال الرمز."));
         }
       }
-    } catch (err) {
-      setError("خطأ في الاتصال بالسيرفر.");
+    } catch {
+      setError("خطأ في الاتصال بالخادم.");
     } finally {
       setIsResending(false);
     }
-  };
+  }, [email, isResending, cooldown]);
+
+  /* ---------------- First Load ---------------- */
 
   useEffect(() => {
     if (!email) {
-      setError("البريد الإلكتروني مفقود. يرجى محاولة التسجيل مرة أخرى.");
-    } else if (searchParams.get("resend") === "true") {
-      handleResendOTP();
+      setError("البريد مفقود. ارجع وسجل من جديد.");
     }
-  }, [email, searchParams]);
+  }, [email]);
+
+  /* ---------------- Handle Input Change ---------------- */
+
+  const updateOtp = (newOtp: string[]) => {
+    setOtp(newOtp);
+    const code = newOtp.join("");
+    setValue("code", code, { shouldValidate: true });
+    clearErrors("code");
+    setError("");
+    setMessage("");
+
+    if (code.length === OTP_LENGTH) {
+      handleSubmit(onSubmit)();
+    }
+  };
 
   const handleChange = (index: number, value: string) => {
-    if (isNaN(Number(value))) return;
+    if (!/^\d*$/.test(value)) return;
 
     const newOtp = [...otp];
-    newOtp[index] = value.substring(value.length - 1);
-    setOtp(newOtp);
-    setError("");
+    newOtp[index] = value.slice(-1);
+    updateOtp(newOtp);
 
-    // Move to next input if value is entered
-    if (value && index < 3) {
+    if (value && index < OTP_LENGTH - 1) {
       inputRefs.current[index + 1]?.focus();
     }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const pasted = e.clipboardData.getData("text").trim();
+    if (!/^\d+$/.test(pasted)) return;
+
+    const newOtp = pasted
+      .slice(0, OTP_LENGTH)
+      .split("")
+      .concat(Array(OTP_LENGTH).fill(""))
+      .slice(0, OTP_LENGTH);
+
+    updateOtp(newOtp);
+    inputRefs.current[OTP_LENGTH - 1]?.focus();
   };
 
   const handleKeyDown = (
     index: number,
     e: React.KeyboardEvent<HTMLInputElement>,
   ) => {
-    // Move to previous input on backspace if current is empty
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  /* ---------------- Submit ---------------- */
+
+  const onSubmit = async (values: VerifyOtpFormValues) => {
+    setIsLoading(true);
     setError("");
     setMessage("");
 
-    const code = otp.join("");
-    if (code.length < 4) {
-      setError("يرجى إدخال رمز التحقق كاملاً (4 أرقام).");
-      return;
-    }
-
-    setIsLoading(true);
-    console.log("Verifying OTP for:", email, "Code:", code);
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
 
     try {
       const res = await fetch(
@@ -120,98 +192,66 @@ export default function VerifyOTP() {
             Accept: "application/json",
           },
           body: JSON.stringify({
-            email: email,
-            code: code, // إرسال كنص للحفاظ على الأصفار
+            email,
+            code: values.code,
           }),
+          signal: abortRef.current.signal,
         },
       );
 
       const data = await res.json();
-      console.log("Verify Response:", data);
 
       if (res.ok) {
-        setMessage("تم تأكيد الحساب بنجاح! سيتم توجيهك لصفحة الدخول.");
-        setTimeout(() => {
-          router.push("/login");
-        }, 2000);
+        setMessage("تم تأكيد الحساب. جاري تحويلك...");
+        setTimeout(() => router.push("/login"), 1500);
       } else {
         if (res.status === 429) {
-          setError(
-            "لقد تجاوزت عدد المحاولات المسموح بها. يرجى الانتظار قليلاً.",
-          );
+          setError("وصلت للحد المسموح للمحاولات. انتظر شوي.");
         } else {
-          setError(data.message || "الرمز غير صحيح أو منتهي الصلاحية.");
+          setError(toArabicApiError(data.message, "الرمز غير صحيح أو منتهي."));
         }
       }
-    } catch (err) {
-      setError("فشل الاتصال بالخادم، يرجى المحاولة لاحقاً.");
+    } catch (err: unknown) {
+      if (!(err instanceof Error) || err.name !== "AbortError") {
+        setError("فشل الاتصال بالخادم.");
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
+  /* ---------------- UI ---------------- */
+
   return (
-    <div
-      className={`min-h-screen w-full flex md:items-center md:justify-center bg-[var(--background)] text-[var(--foreground)] relative overflow-hidden ${cairo.className}`}
-      dir="rtl"
-    >
-      <div className="hidden md:block absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-200/50 rounded-full blur-3xl mix-blend-multiply opacity-70" />
-      <div className="hidden md:block absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-sky-200/50 rounded-full blur-3xl mix-blend-multiply opacity-70 delay-700" />
-
-      <nav className="absolute top-6 right-6 z-50">
-        <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse bg-white/70 dark:bg-slate-900/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/60 dark:border-slate-700/60 ">
-          <li className="inline-flex items-center">
-            <Link
-              href="/"
-              className="inline-flex items-center text-xs font-bold text-slate-500 dark:text-slate-300 hover:text-blue-600 transition-colors"
-            >
-              <Home className="w-3.5 h-3.5 ml-1.5" />
-              الرئيسية
-            </Link>
-          </li>
-          <li>
-            <div className="flex items-center">
-              <span className="mx-1 text-slate-400">/</span>
-              <span className="inline-flex items-center text-xs font-bold text-blue-600">
-                <ShieldCheck className="w-3.5 h-3.5 ml-1.5" />
-                تأكيد الحساب
-              </span>
-            </div>
-          </li>
-        </ol>
-      </nav>
-
-      <div className="w-full h-screen md:h-auto md:max-w-md bg-white/85 dark:bg-slate-900/80 backdrop-blur-xl md:rounded-3xl  md:border md:border-slate-200/70 dark:border-slate-700/60 flex flex-col px-6 pt-24 pb-10 md:py-10 md:px-10 relative z-10">
-        <div className="w-full mx-auto flex flex-col justify-center h-full md:h-auto">
-          <div className="text-center mb-10">
-            <div className="mx-auto w-14 h-14 bg-gradient-to-tr from-blue-600 to-blue-500 rounded-2xl flex items-center justify-center text-white font-bold text-2xl   mb-6">
-              ش
-            </div>
-            <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-              تأكيد الحساب
-            </h2>
-            <p className="text-slate-500 dark:text-slate-300 text-sm mt-3 font-medium">
-              أدخل رمز التحقق المرسل إلى: <br />
-              <span className="text-blue-600 font-bold" dir="ltr">
-                {email}
-              </span>
+    <div dir="rtl" className={`page-shell ${cairo.className}`}>
+      <div className="min-h-screen flex items-center justify-center px-4 py-8">
+        <div className="panel w-full max-w-md p-6 md:p-8">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-black">تأكيد الحساب</h1>
+            <p className="text-sm text-muted mt-2">
+              اكتب رمز التحقق المرسل للبريد
+            </p>
+            <p className="text-sm text-primary mt-1" dir="ltr">
+              {email}
             </p>
           </div>
 
-          {error && (
-            <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-medium text-center">
-              {error}
-            </div>
-          )}
+          {error && <div className="status-error mb-4">{error}</div>}
+          {message && <div className="status-success mb-4">{message}</div>}
 
-          {message && (
-            <div className="mb-6 p-4 rounded-xl bg-green-50 border border-green-100 text-green-600 text-sm font-medium text-center">
-              {message}
-            </div>
-          )}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <input
+              type="hidden"
+              {...register("code", {
+                required: "ادخل الرمز كامل (4 أرقام)",
+                pattern: {
+                  value: /^\d{4}$/,
+                  message: "ادخل الرمز كامل (4 أرقام)",
+                },
+              })}
+            />
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="flex justify-center gap-4" dir="ltr">
+            <div className="flex justify-center gap-2" dir="ltr">
               {otp.map((digit, index) => (
                 <input
                   key={index}
@@ -224,32 +264,41 @@ export default function VerifyOTP() {
                   value={digit}
                   onChange={(e) => handleChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
+                  onPaste={handlePaste}
                   disabled={isLoading}
-                  className="w-14 h-16 text-center text-3xl font-bold rounded-2xl border border-slate-300 dark:border-slate-700 bg-white/70 dark:bg-slate-900/60 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none text-slate-900 dark:text-slate-100"
+                  className="w-12 h-12 rounded-lg border border-border text-center text-lg font-bold outline-none focus:border-primary"
                 />
               ))}
             </div>
 
+            {errors.code && (
+              <p className="text-red-600 text-sm text-center">
+                {errors.code.message}
+              </p>
+            )}
+
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-14 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold text-lg   hover:-translate-y-1 transition-all duration-300 disabled:opacity-70 flex items-center justify-center"
+              className="btn-primary w-full disabled:opacity-70"
             >
               {isLoading ? "جاري التحقق..." : "تأكيد الرمز"}
             </button>
           </form>
 
-          <div className="mt-8 text-center">
-            <p className="text-sm text-slate-500 dark:text-slate-300 font-medium">
-              لم يصلك الرمز؟{" "}
-              <button
-                onClick={handleResendOTP}
-                disabled={isResending}
-                className="font-bold text-blue-600 hover:underline disabled:opacity-50"
-              >
-                {isResending ? "جاري الإرسال..." : "إعادة الإرسال"}
-              </button>
-            </p>
+          <div className="mt-4 text-center text-sm text-muted">
+            ما وصلكش الرمز؟{" "}
+            <button
+              onClick={handleResendOTP}
+              disabled={isResending || cooldown > 0}
+              className="text-primary font-bold hover:underline disabled:opacity-60"
+            >
+              {cooldown > 0
+                ? `إعادة الإرسال بعد ${cooldown} ثانية`
+                : isResending
+                  ? "جاري الإرسال..."
+                  : "إعادة الإرسال"}
+            </button>
           </div>
         </div>
       </div>

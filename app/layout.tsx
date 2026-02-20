@@ -1,22 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Tajawal } from "next/font/google";
+import { Tajawal } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
+import { ToastProvider } from "@/components/ToastProvider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const TajawalFont = Tajawal({
+const tajawal = Tajawal({
   weight: ["400", "500", "700", "800"],
   variable: "--font-tajawal",
   subsets: ["arabic"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
@@ -49,18 +40,31 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * المكون الجذري للتطبيق (RootLayout).
+ *
+ * الغلاف الأساسي الذي يحيط بجميع صفحات التطبيق بنظام الـ App Router في Next.js.
+ * يهتم بإنشاء الـ `<html>` و `<body>` وتطبيق خط "تجوال" (Tajawal) باللغة العربية.
+ * يضمن أيضاً إضافة مكون `ToastProvider` لعرض الإشعارات في أي مكان، ومكون `Footer`
+ * للظهور في أسفل كل صفحة.
+ *
+ * @param {Object} props - خصائص المكون (الأبناء `children`).
+ * @returns {JSX.Element} هيكل HTML الرئيسي للتطبيق.
+ */
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl">
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body
-        className={`${TajawalFont.variable} ${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-[var(--background)] text-[var(--foreground)]`}
+        className={`${tajawal.variable} antialiased min-h-screen flex flex-col page-shell`}
       >
-        <div className="flex-1 w-full">{children}</div>
-        <Footer />
+        <ToastProvider>
+          <div className="flex-1 w-full">{children}</div>
+          <Footer />
+        </ToastProvider>
       </body>
     </html>
   );
