@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Cairo } from "next/font/google";
 import Link from "next/link";
 import Cookies from "js-cookie";
@@ -16,33 +16,31 @@ const cairo = Cairo({
   weight: ["400", "600", "700", "900"],
 });
 
-/**
- * مكون الصفحة الرئيسية (Home).
- *
- * يمثل واجهة الدخول الأولى للمنصة. يعرض رسالة ترحيبية للمستخدمين،
- * ويتغير شريط التنقل (Navigation) بناءً على حالة المصادقة (Auth State):
- * - للزوار (Guest): يعرض أزرار "تسجيل الدخول" و "حساب جديد".
- * - للطلاب: يعرض زر للانتقال لصفحة "المواد" وزر لتسجيل الخروج.
- * - للمدراء (Admin): يضيف زر للوصول السريع إلى "لوحة التحكم".
- *
- * يعتمد على ملفات الكوكيز (`user`, `token`) لتحديد حالة الجلسة.
- *
- * @returns {JSX.Element} الصفحة الترحيبية (Landing Page).
- */
 export default function Home() {
-  const [user] = useState<User | null>(() => {
-    if (typeof window === "undefined") return null;
-    const savedUser = Cookies.get("user");
-    const token = Cookies.get("token");
-    if (savedUser && token) return JSON.parse(savedUser);
-    return null;
-  });
-  const [isAuthLoading] = useState<boolean>(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
   const isAdmin = user?.role?.toLowerCase() === "admin";
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const savedUser = Cookies.get("user");
+      const token = Cookies.get("token");
+      if (savedUser && token) {
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch {}
+      }
+      setIsAuthLoading(false);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <div dir="rtl" className={`page-shell ${cairo.className}`}>
-      <nav className="bg-white border-b border-border">
+    <div
+      dir="rtl"
+      className={`page-shell ${cairo.className} min-h-screen w-full flex flex-col bg-background text-foreground overflow-x-hidden`}
+    >
+      <nav className="bg-white border-b border-border w-full">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link
             href="/"
@@ -115,11 +113,11 @@ export default function Home() {
         </div>
       </nav>
 
-      <main className="min-h-[calc(100vh-64px)] px-4 py-8 flex items-center justify-center">
+      <main className="flex-1 w-full flex items-center justify-center px-4 py-8">
         <motion.section
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="panel w-full max-w-3xl p-7 md:p-10 text-center"
+          className="panel w-full max-w-3xl p-7 md:p-10 text-center mx-auto"
         >
           <p className="inline-flex px-3 py-1 rounded-full text-xs font-bold bg-[#eaf2ff] text-primary border border-[#c9dcff]">
             بوابة طلاب تقنية المعلومات
@@ -170,16 +168,10 @@ export default function Home() {
 
           {/* {!user && (
             <div className="mt-4 text-sm text-muted flex flex-wrap items-center justify-center gap-4">
-              <Link
-                href="/forgot-password"
-                className="hover:text-primary hover:underline"
-              >
+              <Link href="/forgot-password" className="hover:text-primary hover:underline">
                 نسيت كلمة المرور؟
               </Link>
-              <Link
-                href="/register"
-                className="hover:text-primary hover:underline"
-              >
+              <Link href="/register" className="hover:text-primary hover:underline">
                 عندك رمز OTP؟ كمل التسجيل
               </Link>
             </div>

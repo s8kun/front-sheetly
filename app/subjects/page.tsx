@@ -186,7 +186,7 @@ export default function SubjectsPage() {
 
         {error && <div className="status-error mb-6">{error}</div>}
 
-        <div className="min-h-[400px] mb-8">
+        <div className="mb-8">
           <AnimatePresence mode="wait">
             {isLoading ? (
               <motion.div

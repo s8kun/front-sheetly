@@ -21,19 +21,6 @@ const cairo = Cairo({
   weight: ["400", "600", "700"],
 });
 
-/**
- * مكون التخطيط (Layout) لجميع صفحات قسم المواد الدراسية.
- *
- * يوفر الهيكلية الأساسية التي تتضمن القائمة الجانبية (Sidebar) وشريط التنقل العلوي للمسارات (Breadcrumbs).
- * يتعامل مع تجربة المستخدم على الشاشات الكبيرة والصغيرة (Responsive Design) ويظهر القائمة الجانبية بشكل منزلق
- * في الشاشات الصغيرة مع تأثيرات حركية.
- *
- * يعرض روابطاً مختلفة بناءً على دور المستخدم (أدمن أم طالب)، مما يتيح للأدمن الدخول للوحة التحكم،
- * ويمنع إظهار "شيتاتي" له، بينما تظهر للطلاب.
- *
- * @param {Object} props - خصائص المكون (الأبناء `children`).
- * @returns {JSX.Element} غلاف التخطيط الذي يحيط بصفحات المواد.
- */
 export default function SubjectsLayout({
   children,
 }: {
@@ -127,7 +114,7 @@ export default function SubjectsLayout({
   return (
     <div
       dir="rtl"
-      className={`${cairo.className} page-shell lg:grid lg:grid-cols-[260px_1fr]`}
+      className={`${cairo.className} page-shell min-h-screen lg:h-screen lg:grid lg:grid-cols-[260px_1fr] lg:overflow-hidden`}
     >
       <AnimatePresence>
         {isSidebarOpen && (
@@ -143,7 +130,7 @@ export default function SubjectsLayout({
       </AnimatePresence>
 
       <aside
-        className={`fixed top-0 inset-s-0 h-screen w-[260px] bg-white border-e border-border z-50 transform transition-transform duration-200 lg:static lg:h-[calc(100vh-64px)]! lg:translate-x-0 ${
+        className={`fixed top-0 inset-s-0 h-screen w-[260px] bg-white border-e border-border z-50 transform transition-transform duration-200 lg:static lg:h-full lg:translate-x-0 ${
           isSidebarOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -189,7 +176,7 @@ export default function SubjectsLayout({
         </div>
       </aside>
 
-      <div className="min-w-0">
+      <div className="min-w-0 flex flex-col lg:h-full lg:overflow-y-auto">
         <header className="lg:hidden h-16 px-4 border-b border-border bg-white flex items-center justify-between">
           <button
             onClick={() => setIsSidebarOpen(true)}
@@ -203,7 +190,7 @@ export default function SubjectsLayout({
           </Link>
         </header>
 
-        <main className="section-wrap">
+        <main className="section-wrap flex-1">
           <nav className="mb-5" aria-label="Breadcrumb">
             <ol className="inline-flex flex-wrap items-center gap-1 bg-[#f7fbff] px-3 py-2 rounded-full border border-[#d9e6f8] text-sm text-muted">
               {breadcrumbs.map((crumb, index) => (

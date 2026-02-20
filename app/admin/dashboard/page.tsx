@@ -369,7 +369,7 @@ export default function AdminDashboard() {
               className="bg-white p-6 rounded-lg border border-border flex flex-col gap-4 relative overflow-hidden"
             >
               <div
-                className={`absolute top-0 start-0 w-2 h-full ${stat.color}`}
+                className={`absolute top-0 inset-s-0 w-2 h-full ${stat.color}`}
               />
               <div className="flex justify-between items-start">
                 <div

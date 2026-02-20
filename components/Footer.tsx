@@ -10,10 +10,11 @@
  */
 export default function Footer() {
   return (
-    <footer className="w-full border-t border-border bg-white mt-8">
+    <footer className="w-full border-t border-border bg-white">
       <div className="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <p className="text-xs text-muted font-medium text-center sm:text-right">
-          شيتاتي © 2026 - منصة شيتات طلاب تقنية المعلومات بجامعة بنغازي
+        <p className="text-sm text-muted">
+          تم التطوير بواسطة الطالب{" "}
+          <span className="font-bold text-foreground">عبدالله الفرجاني</span>
         </p>
 
         <div className="flex items-center gap-4">

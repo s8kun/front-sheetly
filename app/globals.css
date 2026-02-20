@@ -99,9 +99,18 @@ textarea {
   background: var(--primary);
   color: #fff;
   border-radius: 10px;
-  min-height: 44px;
-  padding: 0.625rem 1.2rem;
+  min-height: 38px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
   font-weight: 700;
+}
+
+@media (min-width: 768px) {
+  .btn-primary {
+    min-height: 44px;
+    padding: 0.625rem 1.2rem;
+    font-size: 1rem;
+  }
 }
 
 .btn-primary:hover {
@@ -113,9 +122,18 @@ textarea {
   background: #fff;
   color: var(--foreground);
   border-radius: 10px;
-  min-height: 44px;
-  padding: 0.625rem 1.2rem;
+  min-height: 38px;
+  padding: 0.3rem 1rem;
+  font-size: 0.6rem;
   font-weight: 700;
+}
+
+@media (min-width: 768px) {
+  .btn-ghost {
+    min-height: 44px;
+    padding: 0.625rem 1.2rem;
+    font-size: 1rem;
+  }
 }
 
 .btn-ghost:hover {

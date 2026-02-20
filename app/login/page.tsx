@@ -163,7 +163,7 @@ export default function Login() {
                   disabled={isLoading}
                   className="flex-1 h-full px-2 text-center outline-none"
                 />
-                <span className="px-3 text-slate-500 border-s border-border bg-slate-50 h-full inline-flex items-center text-xs sm:text-sm">
+                <span className="px-3 text-slate-500 border-s border-border bg-slate-50 h-full inline-flex items-center text-xs shrink-0 whitespace-nowrap">
                   @uob.edu.ly
                 </span>
               </div>
