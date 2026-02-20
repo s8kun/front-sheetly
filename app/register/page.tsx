@@ -164,7 +164,7 @@ export default function Register() {
                 className="field flex items-center p-0 overflow-hidden"
                 dir="ltr"
               >
-                <span className="px-3 text-slate-500 border-e border-border bg-slate-50 h-full inline-flex items-center">
+                <span className="px-2 sm:px-3 text-slate-500 border-e border-border bg-slate-50 h-full inline-flex items-center text-[11px] sm:text-sm shrink-0">
                   itstd.
                 </span>
                 <input
@@ -184,9 +184,9 @@ export default function Register() {
                     onChange: () => setError(""),
                   })}
                   disabled={isLoading}
-                  className="flex-1 h-full px-2 text-center outline-none"
+                  className="flex-1 min-w-0 h-full px-1 sm:px-2 text-center outline-none text-[11px] sm:text-sm"
                 />
-                <span className="px-3 text-slate-500 border-s border-border bg-slate-50 h-full inline-flex items-center text-xs shrink-0 whitespace-nowrap">
+                <span className="px-2 sm:px-3 text-slate-500 border-s border-border bg-slate-50 h-full inline-flex items-center text-[11px] sm:text-sm shrink-0 whitespace-nowrap">
                   @uob.edu.ly
                 </span>
               </div>
