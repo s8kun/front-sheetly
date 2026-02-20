@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Cairo } from "next/font/google";
+
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toArabicApiError } from "@/lib/api-errors";
@@ -9,11 +9,6 @@ import { toArabicApiError } from "@/lib/api-errors";
 interface VerifyOtpFormValues {
   code: string;
 }
-
-const cairo = Cairo({
-  subsets: ["arabic"],
-  weight: ["400", "500", "600", "700"],
-});
 
 const OTP_LENGTH = 4;
 const RESEND_COOLDOWN = 60;
@@ -223,7 +218,7 @@ export default function VerifyOTP() {
   /* ---------------- UI ---------------- */
 
   return (
-    <div dir="rtl" className={`page-shell ${cairo.className}`}>
+    <div dir="rtl" className="page-shell">
       <div className="min-h-screen flex items-center justify-center px-4 py-8">
         <div className="panel w-full max-w-md p-6 md:p-8">
           <div className="text-center mb-6">

@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Sheet } from "@/app/types";
 import { useParams } from "next/navigation";
 import Cookies from "js-cookie";
@@ -197,7 +197,7 @@ const ActivityItem = memo(({ item, type }: ActivityItemProps) => {
   };
 
   return (
-    <motion.div
+    <m.div
       layout
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -269,7 +269,7 @@ const ActivityItem = memo(({ item, type }: ActivityItemProps) => {
           {isDownloading ? "جاري..." : "تحميل"}
         </button>
       </div>
-    </motion.div>
+    </m.div>
   );
 });
 

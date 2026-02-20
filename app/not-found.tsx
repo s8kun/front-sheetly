@@ -1,14 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { Cairo } from "next/font/google";
+import { m } from "framer-motion";
 import { FileQuestion, Home } from "lucide-react";
-
-const cairo = Cairo({
-  subsets: ["arabic"],
-  weight: ["400", "600", "700", "900"],
-});
 
 /**
  * مكون صفحة غير موجودة (NotFound - 404).
@@ -21,11 +15,8 @@ const cairo = Cairo({
  */
 export default function NotFound() {
   return (
-    <div
-      dir="rtl"
-      className={`${cairo.className} page-shell flex items-center justify-center p-6`}
-    >
-      <motion.div
+    <div dir="rtl" className="page-shell flex items-center justify-center p-6">
+      <m.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         className="panel max-w-xl w-full p-8 text-center"
@@ -51,7 +42,7 @@ export default function NotFound() {
             تصفح المواد
           </Link>
         </div>
-      </motion.div>
+      </m.div>
     </div>
   );
 }

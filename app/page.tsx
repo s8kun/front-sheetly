@@ -1,20 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Cairo } from "next/font/google";
 import Link from "next/link";
 import Cookies from "js-cookie";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 
 interface User {
   name: string;
   role: string;
 }
-
-const cairo = Cairo({
-  subsets: ["arabic"],
-  weight: ["400", "600", "700", "900"],
-});
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
@@ -22,23 +16,20 @@ export default function Home() {
   const isAdmin = user?.role?.toLowerCase() === "admin";
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const savedUser = Cookies.get("user");
-      const token = Cookies.get("token");
-      if (savedUser && token) {
-        try {
-          setUser(JSON.parse(savedUser));
-        } catch {}
-      }
-      setIsAuthLoading(false);
-    }, 0);
-    return () => clearTimeout(timer);
+    const savedUser = Cookies.get("user");
+    const token = Cookies.get("token");
+    if (savedUser && token) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch {}
+    }
+    setIsAuthLoading(false);
   }, []);
 
   return (
     <div
       dir="rtl"
-      className={`page-shell ${cairo.className} min-h-screen w-full flex flex-col bg-background text-foreground overflow-x-hidden`}
+      className="page-shell min-h-screen w-full flex flex-col bg-background text-foreground overflow-x-hidden"
     >
       <nav className="bg-white border-b border-border w-full">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -54,16 +45,16 @@ export default function Home() {
 
           <AnimatePresence mode="wait">
             {isAuthLoading ? (
-              <motion.div
+              <m.div
                 key="loading"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="text-sm text-muted"
               >
                 جاري التحقق...
-              </motion.div>
+              </m.div>
             ) : user ? (
-              <motion.div
+              <m.div
                 key="user"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -93,9 +84,9 @@ export default function Home() {
                 >
                   تسجيل خروج
                 </button>
-              </motion.div>
+              </m.div>
             ) : (
-              <motion.div
+              <m.div
                 key="guest"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -107,14 +98,14 @@ export default function Home() {
                 <Link href="/register" className="btn-primary text-sm">
                   حساب جديد
                 </Link>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
         </div>
       </nav>
 
       <main className="flex-1 w-full flex items-center justify-center px-4 py-8">
-        <motion.section
+        <m.section
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="panel w-full max-w-3xl p-7 md:p-10 text-center mx-auto"
@@ -165,24 +156,7 @@ export default function Home() {
               </>
             )}
           </div>
-
-          {/* {!user && (
-            <div className="mt-4 text-sm text-muted flex flex-wrap items-center justify-center gap-4">
-              <Link href="/forgot-password" className="hover:text-primary hover:underline">
-                نسيت كلمة المرور؟
-              </Link>
-              <Link href="/register" className="hover:text-primary hover:underline">
-                عندك رمز OTP؟ كمل التسجيل
-              </Link>
-            </div>
-          )}
-
-          {!user && (
-            <p className="mt-5 text-xs text-muted">
-              ملاحظة: صفحة المواد محمية ولا تفتح إلا بعد تسجيل الدخول.
-            </p>
-          )} */}
-        </motion.section>
+        </m.section>
       </main>
     </div>
   );

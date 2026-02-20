@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import { Tajawal } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
+import FramerProvider from "@/components/FramerProvider";
 import { ToastProvider } from "@/components/ToastProvider";
 
 const tajawal = Tajawal({
   weight: ["400", "500", "700", "800"],
   variable: "--font-tajawal",
   subsets: ["arabic"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -36,7 +38,7 @@ export const metadata: Metadata = {
     locale: "ar_LY",
   },
   icons: {
-    icon: "/favicon.ico", // تأكد من وجود أيقونة
+    icon: "/favicon.ico",
   },
 };
 
@@ -61,10 +63,12 @@ export default function RootLayout({
       <body
         className={`${tajawal.variable} antialiased min-h-screen flex flex-col page-shell`}
       >
-        <ToastProvider>
-          <div className="flex-1 w-full">{children}</div>
-          <Footer />
-        </ToastProvider>
+        <FramerProvider>
+          <ToastProvider>
+            <div className="flex-1 w-full">{children}</div>
+            <Footer />
+          </ToastProvider>
+        </FramerProvider>
       </body>
     </html>
   );

@@ -1,18 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Cairo } from "next/font/google";
 import Link from "next/link";
-import { motion, AnimatePresence, Variants } from "framer-motion";
+import { m, AnimatePresence, Variants } from "framer-motion";
 import { Subject } from "@/app/types";
 import Cookies from "js-cookie";
 import { ArrowLeft } from "lucide-react";
 import { fetchJsonWithCache, fetchWithRetry } from "@/lib/network";
-
-const cairo = Cairo({
-  subsets: ["arabic"],
-  weight: ["400", "600", "700", "900"],
-});
 
 const UI_COLORS = [
   "bg-blue-500",
@@ -151,9 +145,9 @@ export default function SubjectsPage() {
   };
 
   return (
-    <div className={cairo.className}>
+    <div>
       <main>
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-6"
@@ -164,7 +158,7 @@ export default function SubjectsPage() {
           <p className="text-muted text-sm">
             اختار المادة اللي تبيها وخش عليها مباشرة
           </p>
-        </motion.div>
+        </m.div>
 
         <div className="relative mb-6">
           <input
@@ -189,7 +183,7 @@ export default function SubjectsPage() {
         <div className="mb-8">
           <AnimatePresence mode="wait">
             {isLoading ? (
-              <motion.div
+              <m.div
                 key="skeleton"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -202,9 +196,9 @@ export default function SubjectsPage() {
                     className="h-20 bg-white rounded-lg animate-pulse border border-border"
                   />
                 ))}
-              </motion.div>
+              </m.div>
             ) : currentItems.length > 0 ? (
-              <motion.div
+              <m.div
                 key={`page-${currentPage}`}
                 variants={containerVariants}
                 initial="hidden"
@@ -212,11 +206,7 @@ export default function SubjectsPage() {
                 className="grid gap-4"
               >
                 {currentItems.map((subject) => (
-                  <motion.div
-                    key={subject.id}
-                    variants={itemVariants}
-                    exit="exit"
-                  >
+                  <m.div key={subject.id} variants={itemVariants} exit="exit">
                     <Link
                       href={`/subjects/${subject.code}`}
                       className="group flex flex-col md:flex-row items-center justify-between bg-white p-4 rounded-lg border border-border hover:border-[#b8cff3]"
@@ -255,18 +245,18 @@ export default function SubjectsPage() {
                         </div>
                       </div>
                     </Link>
-                  </motion.div>
+                  </m.div>
                 ))}
-              </motion.div>
+              </m.div>
             ) : (
-              <motion.div
+              <m.div
                 key="empty"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="text-center py-16 bg-white rounded-lg border border-dashed border-border"
               >
                 <p className="text-muted font-bold">لا توجد مواد</p>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
         </div>

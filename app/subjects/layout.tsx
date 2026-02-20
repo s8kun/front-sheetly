@@ -3,8 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Cairo } from "next/font/google";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import {
   Home,
   BookOpen,
@@ -15,11 +14,6 @@ import {
   X,
 } from "lucide-react";
 import Cookies from "js-cookie";
-
-const cairo = Cairo({
-  subsets: ["arabic"],
-  weight: ["400", "600", "700"],
-});
 
 export default function SubjectsLayout({
   children,
@@ -114,11 +108,11 @@ export default function SubjectsLayout({
   return (
     <div
       dir="rtl"
-      className={`${cairo.className} page-shell min-h-screen lg:h-screen lg:grid lg:grid-cols-[260px_1fr] lg:overflow-hidden`}
+      className="page-shell min-h-screen lg:h-screen lg:grid lg:grid-cols-[260px_1fr] lg:overflow-hidden"
     >
       <AnimatePresence>
         {isSidebarOpen && (
-          <motion.button
+          <m.button
             type="button"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

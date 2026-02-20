@@ -1,6 +1,6 @@
 // src/components/Activity.tsx
 import { memo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import ActivityItem from "./ActivityItem";
 import { Sheet } from "@/app/types";
 
@@ -24,7 +24,7 @@ interface ActivityProps {
 const Activity = memo(
   ({ items, type, emptyMessage = "لا يوجد محتوى لعرضه" }: ActivityProps) => {
     return (
-      <motion.div
+      <m.div
         layout
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 min-h-auto"
       >
@@ -34,7 +34,7 @@ const Activity = memo(
               <ActivityItem key={item.id} item={item} type={type} />
             ))
           ) : (
-            <motion.div
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -56,10 +56,10 @@ const Activity = memo(
                 </svg>
               </div>
               <p>{emptyMessage}</p>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </m.div>
     );
   },
 );

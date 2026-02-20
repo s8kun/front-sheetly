@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Cairo } from "next/font/google";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
@@ -12,11 +12,6 @@ interface LoginFormValues {
   studentId: string;
   password: string;
 }
-
-const cairo = Cairo({
-  subsets: ["arabic"],
-  weight: ["400", "500", "600", "700"],
-});
 
 /**
  * مكون صفحة تسجيل الدخول (Login).
@@ -120,7 +115,7 @@ export default function Login() {
   };
 
   return (
-    <div dir="rtl" className={`page-shell ${cairo.className}`}>
+    <div dir="rtl" className="page-shell">
       <div className="min-h-screen flex items-center justify-center px-4 py-8">
         <div className="panel w-full max-w-md p-6 md:p-8">
           <div className="text-center mb-6">

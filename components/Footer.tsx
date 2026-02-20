@@ -11,7 +11,7 @@
 export default function Footer() {
   return (
     <footer className="w-full border-t border-border bg-white">
-      <div className="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 lg:mb-2">
         <p className="text-sm text-muted">
           تم التطوير بواسطة الطالب{" "}
           <span className="font-bold text-foreground">عبدالله الفرجاني</span>

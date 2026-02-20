@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { Cairo } from "next/font/google";
+import { m, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Cookies from "js-cookie";
 import {
@@ -32,11 +31,6 @@ interface UserFormValues {
   password?: string;
   password_confirmation?: string;
 }
-
-const cairo = Cairo({
-  subsets: ["arabic"],
-  weight: ["400", "600", "700", "900"],
-});
 
 /**
  * مكون صفحة إدارة المستخدمين (UsersManagement).
@@ -124,7 +118,10 @@ export default function UsersManagement() {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/admin/users?page=${currentPage}`,
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
         },
       );
       if (res.ok) {
@@ -193,8 +190,8 @@ export default function UsersManagement() {
         method,
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
           Accept: "application/json",
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
@@ -236,7 +233,10 @@ export default function UsersManagement() {
         `${process.env.NEXT_PUBLIC_API_URL}/admin/users/${userId}`,
         {
           method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
         },
       );
 
@@ -253,10 +253,7 @@ export default function UsersManagement() {
   };
 
   return (
-    <div
-      dir="rtl"
-      className={`${cairo.className} min-h-screen page-shell p-6 md:p-10`}
-    >
+    <div dir="rtl" className="min-h-screen page-shell p-6 md:p-10">
       {/* Breadcrumb العلوية */}
       <nav className="mb-8 flex justify-start" aria-label="Breadcrumb">
         <ol className="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse bg-[#f7fbff] px-4 py-2 rounded-full border border-[#d9e6f8]">
@@ -334,7 +331,7 @@ export default function UsersManagement() {
                     ))
                   ) : users.length > 0 ? (
                     users.map((user) => (
-                      <motion.tr
+                      <m.tr
                         key={user.id}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -390,7 +387,7 @@ export default function UsersManagement() {
                             </button>
                           </div>
                         </td>
-                      </motion.tr>
+                      </m.tr>
                     ))
                   ) : (
                     <tr>
@@ -436,14 +433,14 @@ export default function UsersManagement() {
       <AnimatePresence>
         {showModal && (
           <div className="fixed inset-0 z-200 flex items-center justify-center p-4">
-            <motion.div
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowModal(false)}
               className="absolute inset-0 bg-slate-900/40"
             />
-            <motion.div
+            <m.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -595,7 +592,7 @@ export default function UsersManagement() {
                   </button>
                 </div>
               </form>
-            </motion.div>
+            </m.div>
           </div>
         )}
       </AnimatePresence>

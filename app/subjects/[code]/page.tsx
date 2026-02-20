@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect, use, useMemo } from "react";
-import { Cairo } from "next/font/google";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import Activity from "@/components/Activity";
 import { SubjectData, Sheet } from "@/app/types";
 import Cookies from "js-cookie";
@@ -17,11 +16,6 @@ type EnhancedSheet = Sheet & {
 };
 
 type ChapterItem = number | (Partial<Sheet> & { chapter_number?: number });
-
-const cairo = Cairo({
-  subsets: ["arabic"],
-  weight: ["400", "500", "600", "700"],
-});
 
 /**
  * مكون تفاصيل المادة (SubjectPage).
@@ -93,7 +87,10 @@ export default function SubjectPage({
         {
           method: "DELETE",
           credentials: "include",
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
         },
       );
       if (res.ok) {
@@ -200,7 +197,7 @@ export default function SubjectPage({
   const finalsData = useMemo(() => data?.finals || [], [data]);
 
   return (
-    <div className={cairo.className}>
+    <div>
       <main>
         {loading ? (
           <div className="animate-pulse space-y-8">
@@ -278,7 +275,7 @@ export default function SubjectPage({
                     }`}
                   >
                     {activeTab === tab.id && (
-                      <motion.div
+                      <m.div
                         layoutId="activeTab"
                         className="absolute inset-0 bg-primary rounded-md"
                         transition={{

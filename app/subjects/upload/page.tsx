@@ -2,7 +2,7 @@
 
 import Cookies from "js-cookie";
 import { useState, useEffect } from "react";
-import { Cairo } from "next/font/google";
+
 import { useRouter } from "next/navigation";
 import { UploadCloud, CheckCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -20,11 +20,6 @@ interface UploadFormValues {
   chapterNumber: string;
   file: FileList;
 }
-
-const cairo = Cairo({
-  subsets: ["arabic"],
-  weight: ["400", "600", "700"],
-});
 
 /**
  * مكون صفحة رفع الشيتات (UploadPage).
@@ -213,7 +208,7 @@ export default function UploadPage() {
   };
 
   return (
-    <div className={`max-w-2xl mx-auto py-10 px-6 ${cairo.className}`}>
+    <div className="max-w-2xl mx-auto py-10 px-6">
       <div className="panel p-6 md:p-8">
         <header className="text-center mb-8">
           <div className="w-14 h-14 bg-[#eaf2ff] rounded-lg flex items-center justify-center text-primary mx-auto mb-4 border border-[#c9dcff]">

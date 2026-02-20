@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import Cookies from "js-cookie";
 import Link from "next/link";
 import { Sheet } from "@/app/types";
@@ -138,7 +138,7 @@ export default function MySheetsPage() {
         <div className="grid gap-4">
           <AnimatePresence>
             {sheets.map((sheet) => (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
@@ -174,7 +174,7 @@ export default function MySheetsPage() {
                 >
                   {getStatusLabel(sheet.status)}
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </AnimatePresence>
         </div>

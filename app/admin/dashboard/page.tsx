@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { Sheet } from "@/app/types";
 import Link from "next/link";
 import Cookies from "js-cookie";
@@ -100,7 +100,12 @@ export default function AdminDashboard() {
         async () => {
           const res = await fetchWithRetry(
             `${process.env.NEXT_PUBLIC_API_URL}/admin/sheets/pending`,
-            { headers: { Authorization: `Bearer ${token}` } },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: "application/json",
+              },
+            },
           );
           if (!res.ok) throw new Error("pending failed");
           return res.json();
@@ -113,7 +118,12 @@ export default function AdminDashboard() {
         async () => {
           const res = await fetchWithRetry(
             `${process.env.NEXT_PUBLIC_API_URL}/admin/users`,
-            { headers: { Authorization: `Bearer ${token}` } },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: "application/json",
+              },
+            },
           );
           if (!res.ok) throw new Error("users failed");
           return res.json();
@@ -126,7 +136,12 @@ export default function AdminDashboard() {
         async () => {
           const res = await fetchWithRetry(
             `${process.env.NEXT_PUBLIC_API_URL}/subjects`,
-            { headers: { Authorization: `Bearer ${token}` } },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: "application/json",
+              },
+            },
           );
           if (!res.ok) throw new Error("subjects failed");
           return res.json();
@@ -361,7 +376,7 @@ export default function AdminDashboard() {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {statCards.map((stat, i) => (
-            <motion.div
+            <m.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -386,7 +401,7 @@ export default function AdminDashboard() {
                   {stat.title}
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
 
@@ -412,7 +427,7 @@ export default function AdminDashboard() {
             <div className="grid gap-4">
               <AnimatePresence>
                 {pendingSheets.map((sheet) => (
-                  <motion.div
+                  <m.div
                     key={sheet.id}
                     layout
                     initial={{ opacity: 0, x: 20 }}
@@ -470,7 +485,7 @@ export default function AdminDashboard() {
                         </button>
                       </div>
                     </div>
-                  </motion.div>
+                  </m.div>
                 ))}
               </AnimatePresence>
             </div>
@@ -491,14 +506,14 @@ export default function AdminDashboard() {
       <AnimatePresence>
         {showAddSubject && (
           <div className="fixed inset-0 z-200 flex items-center justify-center p-4">
-            <motion.div
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowAddSubject(false)}
               className="absolute inset-0 bg-slate-900/40"
             />
-            <motion.div
+            <m.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -553,7 +568,7 @@ export default function AdminDashboard() {
                   </button>
                 </div>
               </form>
-            </motion.div>
+            </m.div>
           </div>
         )}
       </AnimatePresence>
