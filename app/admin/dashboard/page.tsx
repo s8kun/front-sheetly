@@ -201,7 +201,7 @@ export default function AdminDashboard() {
   return (
     <div
       dir="rtl"
-      className="min-h-screen bg-[var(--background)] text-[var(--foreground)] transition-colors duration-300 p-6 md:p-10"
+      className="min-h-screen bg-background text-foreground transition-colors duration-300 p-6 md:p-10"
     >
       <div className="max-w-6xl mx-auto">
         {/* Header */}
@@ -306,7 +306,7 @@ export default function AdminDashboard() {
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="h-28 bg-white/50 dark:bg-slate-800/50 animate-pulse rounded-[2rem]"
+                  className="h-28 bg-white/50 dark:bg-slate-800/50 animate-pulse rounded-4xl"
                 />
               ))}
             </div>
@@ -320,7 +320,7 @@ export default function AdminDashboard() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
-                    className="bg-white dark:bg-slate-800 p-5 rounded-[2rem] border border-slate-200 dark:border-slate-700    transition-all group"
+                    className="bg-white dark:bg-slate-800 p-5 rounded-4xl border border-slate-200 dark:border-slate-700    transition-all group"
                   >
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                       <div className="flex items-center gap-4 flex-1">
@@ -392,7 +392,7 @@ export default function AdminDashboard() {
       {/* Add Subject Modal */}
       <AnimatePresence>
         {showAddSubject && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-200 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
