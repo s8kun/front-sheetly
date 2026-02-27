@@ -1,25 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { m, AnimatePresence, Variants } from "framer-motion";
-import { Subject } from "@/app/types";
-import Cookies from "js-cookie";
 import { ArrowLeft } from "lucide-react";
-import { fetchJsonWithCache, fetchWithRetry } from "@/lib/network";
-
-const UI_COLORS = [
-  "bg-blue-500",
-  "bg-sky-500",
-  "bg-cyan-500",
-  "bg-blue-600",
-  "bg-sky-600",
-  "bg-cyan-600",
-  "bg-blue-400",
-  "bg-sky-400",
-  "bg-cyan-400",
-  "bg-blue-700",
-];
+import { useSubjects } from "./context";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -45,84 +30,13 @@ const itemVariants: Variants = {
  * تعرض هذه الصفحة قائمة بجميع المواد الجامعية المتاحة مع تقسيمها في صفحات (Pagination).
  * تتضمن ميزة بحث تتيح للطلاب تصفية المواد حسب الرمز أو الاسم.
  *
- * الحالة (State):
- * - `subjects`: مصفوفة من كائنات `Subject` المحضرة من הـ API.
- * - `searchQuery`: النص الحالي المكتوب في حقل البحث.
- * - `currentPage`: رقم الصفحة الحالية لعرض المواد.
- * - `isLoading`: حالة التحميل أثناء استدعاء البيانات من الخادم.
- * - `itemsPerPage`: عدد المواد التي تظهر في الصفحة الواحدة (متغير حسب حجم الشاشة).
- * - `error`: لتخزين وعرض أي أخطاء من الخادم أو الشبكة.
- *
  * @returns {JSX.Element} واجهة تصفح المواد الدراسية مع البحث.
  */
 export default function SubjectsPage() {
-  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const { subjects, isLoading, error } = useSubjects();
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
   const [itemsPerPage, setItemsPerPage] = useState(8);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const fetchSubjects = async () => {
-      setIsLoading(true);
-      setError("");
-      const token = Cookies.get("token");
-      try {
-        const cacheKey = `subjects:list:${searchQuery.trim().toLowerCase()}:${(token || "guest").slice(0, 12)}`;
-        const data = await fetchJsonWithCache<Subject[]>(
-          cacheKey,
-          async () => {
-            const res = await fetchWithRetry(
-              `${process.env.NEXT_PUBLIC_API_URL}/subjects?search=${encodeURIComponent(searchQuery)}`,
-              {
-                credentials: "include",
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                  Accept: "application/json",
-                },
-                signal: controller.signal,
-              },
-              { retries: 2, retryDelayMs: 600 },
-            );
-
-            if (!res.ok) {
-              throw new Error("فشل في تحميل المواد");
-            }
-
-            return res.json();
-          },
-          90_000,
-        );
-
-        const initialData = data.map((sub, index) => ({
-          ...sub,
-          chaptersCount: sub.chaptersCount ?? 0,
-          color: UI_COLORS[index % UI_COLORS.length],
-        }));
-
-        setSubjects(initialData);
-      } catch (err) {
-        if (controller.signal.aborted) return;
-        console.error("فشل في تحميل المواد", err);
-        setError(
-          "حدث خطأ أثناء تحميل المواد الدراسية. يرجى المحاولة مرة أخرى.",
-        );
-      }
-
-      if (!controller.signal.aborted) {
-        setIsLoading(false);
-      }
-    };
-
-    const timeoutId = setTimeout(fetchSubjects, 700);
-    return () => {
-      controller.abort();
-      clearTimeout(timeoutId);
-    };
-  }, [searchQuery]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -133,15 +47,57 @@ export default function SubjectsPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const totalPages = Math.ceil(subjects.length / itemsPerPage);
+  const filteredSubjects = useMemo(() => {
+    if (!searchQuery.trim()) return subjects;
+    const query = searchQuery.trim().toLowerCase();
+    return subjects.filter(
+      (sub) =>
+        sub.name.toLowerCase().includes(query) ||
+        sub.code.toLowerCase().includes(query),
+    );
+  }, [subjects, searchQuery]);
+
+  const totalPages = Math.ceil(filteredSubjects.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentItems = subjects.slice(startIndex, startIndex + itemsPerPage);
+  const currentItems = filteredSubjects.slice(
+    startIndex,
+    startIndex + itemsPerPage,
+  );
 
   const goToPage = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else if (currentPage <= 3) {
+      pages.push(1, 2, 3, 4, "...", totalPages);
+    } else if (currentPage >= totalPages - 2) {
+      pages.push(
+        1,
+        "...",
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      );
+    } else {
+      pages.push(
+        1,
+        "...",
+        currentPage - 1,
+        currentPage,
+        currentPage + 1,
+        "...",
+        totalPages,
+      );
+    }
+    return pages;
   };
 
   return (
@@ -263,33 +219,49 @@ export default function SubjectsPage() {
 
         {!isLoading && totalPages > 1 && (
           <nav className="flex justify-center mt-6 pb-4" dir="rtl">
-            <ul className="flex -space-x-px text-sm h-10">
+            <ul className="flex flex-wrap items-center justify-center gap-2 text-sm">
               <li>
                 <button
                   onClick={() => goToPage(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className={`flex items-center justify-center px-5 h-10 border border-border rounded-r-lg font-bold ${currentPage === 1 ? "bg-slate-100 text-slate-400" : "bg-white text-foreground hover:bg-slate-50"}`}
+                  className={`flex items-center justify-center px-4 h-10 rounded-lg font-bold transition-colors ${
+                    currentPage === 1
+                      ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                      : "bg-white text-foreground hover:bg-slate-50 border border-border"
+                  }`}
                 >
                   السابق
                 </button>
               </li>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (number) => (
-                  <li key={number}>
+              {getPageNumbers().map((number, idx) => (
+                <li key={idx}>
+                  {number === "..." ? (
+                    <span className="flex items-center justify-center px-2 h-10 text-slate-500 font-bold">
+                      ...
+                    </span>
+                  ) : (
                     <button
-                      onClick={() => goToPage(number)}
-                      className={`flex items-center justify-center px-4 h-10 border border-border font-bold ${currentPage === number ? "bg-primary text-white border-primary z-10" : "bg-white text-muted hover:bg-slate-50"}`}
+                      onClick={() => goToPage(number as number)}
+                      className={`flex items-center justify-center px-4 h-10 rounded-lg font-bold transition-all ${
+                        currentPage === number
+                          ? "bg-primary text-white shadow-md shadow-primary/20 scale-105"
+                          : "bg-white text-muted hover:bg-slate-50 border border-border"
+                      }`}
                     >
                       {number}
                     </button>
-                  </li>
-                ),
-              )}
+                  )}
+                </li>
+              ))}
               <li>
                 <button
                   onClick={() => goToPage(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className={`flex items-center justify-center px-5 h-10 border border-border rounded-l-lg font-bold ${currentPage === totalPages ? "bg-slate-100 text-slate-400" : "bg-white text-foreground hover:bg-slate-50"}`}
+                  className={`flex items-center justify-center px-4 h-10 rounded-lg font-bold transition-colors ${
+                    currentPage === totalPages
+                      ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                      : "bg-white text-foreground hover:bg-slate-50 border border-border"
+                  }`}
                 >
                   التالي
                 </button>

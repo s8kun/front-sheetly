@@ -6,12 +6,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { UploadCloud, CheckCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
-import {
-  fetchJsonWithCache,
-  fetchWithRetry,
-  invalidateCacheByPrefix,
-} from "@/lib/network";
+import { invalidateCacheByPrefix } from "@/lib/network";
 import { toArabicApiError } from "@/lib/api-errors";
+import { useSubjects } from "../context";
 
 interface UploadFormValues {
   title: string;
@@ -28,7 +25,6 @@ interface UploadFormValues {
  * يتضمن نموذجاً لاختيار عنوان الشيت، المادة، ونوع الملف (شابتر، جزئي، نهائي).
  *
  * الحالة (State):
- * - `subjects`: قائمة المواد المتاحة للاختيار في القائمة المنسدلة.
  * - `isLoading`: يشير إلى حالة معالجة الرفع عبر الخادم.
  * - `error`: لتخزين وعرض الأخطاء (صيغة الملف، الحجم المسموح، أخطاء الخادم).
  * - `success`: حالة لعرض رسالة تفيد بنجاح العملية (يتحول شكل المكون).
@@ -43,9 +39,7 @@ interface UploadFormValues {
  */
 export default function UploadPage() {
   const router = useRouter();
-  const [subjects, setSubjects] = useState<
-    { id: number; name: string; code: string }[]
-  >([]);
+  const { subjects } = useSubjects();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -84,35 +78,6 @@ export default function UploadPage() {
         Cookies.remove("upload-form-cache");
       }
     }
-
-    const fetchSubjects = async () => {
-      try {
-        const data = await fetchJsonWithCache<
-          { id: number; name: string; code: string }[]
-        >(
-          "subjects:upload:list",
-          async () => {
-            const res = await fetchWithRetry(
-              `${process.env.NEXT_PUBLIC_API_URL}/subjects`,
-              {
-                credentials: "include",
-              },
-              { retries: 2, retryDelayMs: 600 },
-            );
-
-            if (!res.ok) throw new Error("Failed subjects fetch");
-            return res.json();
-          },
-          120_000,
-        );
-
-        setSubjects(data);
-      } catch (err) {
-        console.error("Error fetching subjects", err);
-      }
-    };
-
-    fetchSubjects();
   }, [setValue]);
 
   // 2. حفظ البيانات تلقائياً عند أي تغيير

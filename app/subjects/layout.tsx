@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import Cookies from "js-cookie";
 
+import { SubjectsProvider } from "./context";
+
 export default function SubjectsLayout({
   children,
 }: {
@@ -216,7 +218,7 @@ export default function SubjectsLayout({
               ))}
             </ol>
           </nav>
-          {children}
+          <SubjectsProvider>{children}</SubjectsProvider>
         </main>
       </div>
     </div>
