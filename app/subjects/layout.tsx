@@ -14,6 +14,7 @@ import {
   X,
   Calculator,
   ArrowRightLeft,
+  Layers,
 } from "lucide-react";
 import Cookies from "js-cookie";
 
@@ -61,6 +62,11 @@ export default function SubjectsLayout({
       name: "حساب المعدل",
       href: "/subjects/gpa-calculator",
       icon: <Calculator className="w-5 h-5" />,
+    },
+    {
+      name: "نبذة عن الأقسام",
+      href: "/subjects/departments",
+      icon: <Layers className="w-5 h-5" />,
     },
     {
       name: "النقل بين الأقسام",
