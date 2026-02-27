@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   Calculator,
+  ArrowRightLeft,
 } from "lucide-react";
 import Cookies from "js-cookie";
 
@@ -61,6 +62,11 @@ export default function SubjectsLayout({
       href: "/subjects/gpa-calculator",
       icon: <Calculator className="w-5 h-5" />,
     },
+    {
+      name: "النقل بين الأقسام",
+      href: "/subjects/department-transfer",
+      icon: <ArrowRightLeft className="w-5 h-5" />,
+    },
     ...(isAdmin
       ? [
           {
@@ -95,6 +101,11 @@ export default function SubjectsLayout({
 
     if (pathname.includes("/subjects/gpa-calculator")) {
       items.push({ label: "حساب المعدل", current: true });
+      return items;
+    }
+
+    if (pathname.includes("/subjects/department-transfer")) {
+      items.push({ label: "النقل بين الأقسام", current: true });
       return items;
     }
 
