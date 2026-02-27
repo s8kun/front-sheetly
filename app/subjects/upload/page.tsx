@@ -214,7 +214,7 @@ export default function UploadPage() {
                   onChange: () => setError(""),
                 })}
                 className="field"
-                placeholder="مثال: شابتر 1 - ميكانيكا 2"
+                placeholder="مثال: شابتر 1 - فيزياء 1"
               />
               {errors.title && (
                 <p className="text-red-600 text-sm mt-1">

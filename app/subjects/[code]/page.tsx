@@ -158,14 +158,23 @@ export default function SubjectPage({
                   : item.chapter_number || index + 1;
 
               return {
-                id: -chapterNum,
-                title: `شابتر ${chapterNum}`,
+                id:
+                  typeof item === "object" && item !== null && item.id
+                    ? item.id
+                    : -chapterNum,
+                title:
+                  typeof item === "object" && item !== null && item.title
+                    ? item.title
+                    : `شابتر ${chapterNum}`,
                 chapterNumber: chapterNum,
                 isLazy: true,
                 type: "chapter",
                 file_url: "",
                 downloads_count: 0,
-                created_at: new Date().toISOString(),
+                created_at:
+                  typeof item === "object" && item !== null && item.created_at
+                    ? item.created_at
+                    : new Date().toISOString(),
               };
             },
           ) || [];
