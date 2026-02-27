@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   Menu,
   X,
+  Calculator,
 } from "lucide-react";
 import Cookies from "js-cookie";
 
@@ -55,6 +56,11 @@ export default function SubjectsLayout({
       href: "/subjects/upload",
       icon: <Upload className="w-5 h-5" />,
     },
+    {
+      name: "حساب المعدل",
+      href: "/subjects/gpa-calculator",
+      icon: <Calculator className="w-5 h-5" />,
+    },
     ...(isAdmin
       ? [
           {
@@ -84,6 +90,11 @@ export default function SubjectsLayout({
 
     if (pathname.includes("/subjects/my-sheets")) {
       items.push({ label: "شيتاتي", current: true });
+      return items;
+    }
+
+    if (pathname.includes("/subjects/gpa-calculator")) {
+      items.push({ label: "حساب المعدل", current: true });
       return items;
     }
 
