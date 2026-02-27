@@ -15,6 +15,7 @@ import {
   Calculator,
   ArrowRightLeft,
   Layers,
+  Percent,
 } from "lucide-react";
 import Cookies from "js-cookie";
 
@@ -64,6 +65,11 @@ export default function SubjectsLayout({
       icon: <Calculator className="w-5 h-5" />,
     },
     {
+      name: "النسبة المئوية للدرجات",
+      href: "/subjects/grade-percentage",
+      icon: <Percent className="w-5 h-5" />,
+    },
+    {
       name: "نبذة عن الأقسام",
       href: "/subjects/departments",
       icon: <Layers className="w-5 h-5" />,
@@ -107,6 +113,16 @@ export default function SubjectsLayout({
 
     if (pathname.includes("/subjects/gpa-calculator")) {
       items.push({ label: "حساب المعدل", current: true });
+      return items;
+    }
+
+    if (pathname.includes("/subjects/grade-percentage")) {
+      items.push({ label: "النسبة المئوية للدرجات", current: true });
+      return items;
+    }
+
+    if (pathname.includes("/subjects/departments")) {
+      items.push({ label: "نبذة عن الأقسام", current: true });
       return items;
     }
 
