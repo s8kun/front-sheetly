@@ -92,7 +92,6 @@ const ActivityItem = memo(({ item, type }: ActivityItemProps) => {
           }
         }
       } catch (err) {
-        console.error("Delete chapter error:", err);
       } finally {
         setIsDeleting(false);
       }
@@ -118,7 +117,6 @@ const ActivityItem = memo(({ item, type }: ActivityItemProps) => {
           window.location.reload();
         }
       } catch (err) {
-        console.error("Delete sheet error:", err);
       } finally {
         setIsDeleting(false);
       }

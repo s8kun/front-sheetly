@@ -72,7 +72,6 @@ export default function MySheetsPage() {
         const sheetsArray = Array.isArray(data) ? data : data ? [data] : [];
         setSheets(sheetsArray);
       } catch (error) {
-        console.error("Failed to fetch my sheets", error);
         setError(
           error instanceof Error
             ? error.message

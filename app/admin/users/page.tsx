@@ -131,7 +131,6 @@ export default function UsersManagement() {
         setPagination(data);
       }
     } catch (error) {
-      console.error("Failed to fetch users", error);
     } finally {
       setIsLoading(false);
     }

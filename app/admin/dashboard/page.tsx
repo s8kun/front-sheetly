@@ -163,7 +163,6 @@ export default function AdminDashboard() {
       });
       setLastUpdated(new Date().toLocaleTimeString("ar-LY"));
     } catch (error) {
-      console.error("Failed to fetch dashboard data", error);
       showToast("تعذر تحميل بيانات لوحة التحكم.", "error", 3500, {
         label: "إعادة المحاولة",
         onClick: () => fetchData(token, false),
@@ -258,7 +257,6 @@ export default function AdminDashboard() {
         showToast("حدث خطأ أثناء تنفيذ الإجراء", "error");
       }
     } catch (error) {
-      console.error(`Failed to ${action} sheet`, error);
     } finally {
       setActionLoading(null);
     }

@@ -109,10 +109,6 @@ export default function UploadPage() {
       formData.append("chapter_number", values.chapterNumber.trim());
     }
 
-    // Debug: Log FormData contents
-    console.log("Sending Data:");
-    formData.forEach((value, key) => console.log(`${key}:`, value));
-
     const token = Cookies.get("token");
     const csrfToken = Cookies.get("XSRF-TOKEN");
 
@@ -137,8 +133,6 @@ export default function UploadPage() {
       );
 
       const data = await res.json();
-      console.log("API Response Status:", res.status);
-      console.log("API Response Data:", data);
 
       if (res.ok) {
         invalidateCacheByPrefix([
@@ -165,7 +159,6 @@ export default function UploadPage() {
         }
       }
     } catch (err) {
-      console.error("Fetch Error:", err);
       setError("فشل الاتصال بالخادم");
     } finally {
       setIsLoading(false);

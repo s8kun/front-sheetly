@@ -80,7 +80,6 @@ export function SubjectsProvider({ children }: { children: ReactNode }) {
           setSubjects(initialData);
         }
       } catch (err) {
-        console.error("فشل في تحميل المواد", err);
         if (isMounted) {
           setError(
             "حدث خطأ أثناء تحميل المواد الدراسية. يرجى المحاولة مرة أخرى.",

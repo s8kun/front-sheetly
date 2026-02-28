@@ -107,7 +107,6 @@ export default function Register() {
         }
       }
     } catch (err) {
-      console.error("Register Error:", err);
       setError("فشل الاتصال بالخادم، حاول بعد شوي.");
     } finally {
       setIsLoading(false);
